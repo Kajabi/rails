@@ -1,4 +1,5 @@
 require 'config'
+require 'byebug'
 
 require 'active_support/testing/autorun'
 require 'active_support/testing/method_call_assertions'
@@ -12,6 +13,7 @@ require 'active_support/core_ext/string/strip'
 
 require 'support/config'
 require 'support/connection'
+
 
 # TODO: Move all these random hacks into the ARTest namespace and into the support/ dir
 

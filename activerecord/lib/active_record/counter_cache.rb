@@ -40,7 +40,13 @@ module ActiveRecord
           unscoped.where(primary_key => object.id).update_all(
             counter_name => object.send(counter_association).count(:all)
           )
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          Array.wrap(id).each do |idx|
+            sql = "delete from  #{counter_table_name} where parent_id=:parent_id"
+            connection.exec_query(sanitize_sql_array([sql, parent_id: idx]))
+          end
         end
+
         return true
       end
 
@@ -73,15 +79,29 @@ module ActiveRecord
       #   # UPDATE posts
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
-      def update_counters(id, counters)
-        updates = counters.map do |counter_name, value|
+      def update_counters(id, counters) #TODO - add switch for using custom or default impl
+        updates = counters_with_default(counters).map do |counter_name, value|
           operator = value < 0 ? '-' : '+'
           quoted_column = connection.quote_column_name(counter_name)
           "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
         end
 
-        unscoped.where(primary_key => id).update_all updates.join(', ')
+        unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
+
+        counters_using_override(counters).map do |counter_name, value|
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          operator = value < 0 ? '-' : '+'
+          Array.wrap(id).each do |idx|
+            #sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            sql = "insert into #{counter_table_name}(parent_id, increment) values(:idx, :increment_by)"
+            # ISSUE: This next line is a bit of a hack because of how in memory decrements work
+            value = value == 0 ? -1 : value
+            connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
+          end
+        end
       end
+
+
 
       # Increment a numeric field by one, via a direct SQL update.
       #
@@ -119,6 +139,20 @@ module ActiveRecord
       #   DiscussionBoard.decrement_counter(:posts_count, 5)
       def decrement_counter(counter_name, id)
         update_counters(id, counter_name => -1)
+      end
+
+      private
+      def counter_overrides
+        # TODO memoize
+        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
+      end
+
+      def counters_using_override(counters)
+        counters.select { |key,_|  counter_overrides.include?(key) }
+      end
+
+      def counters_with_default(counters)
+        counters.reject { |key,_|  counter_overrides.include?(key) }
       end
     end
 

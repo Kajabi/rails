@@ -54,7 +54,7 @@ end
         |x| x =~ /\/adapters\//
       } + Dir.glob("test/cases/adapters/#{adapter_short}/**/*_test.rb"))
 
-      t.warning = true
+      t.warning = false
       t.verbose = true
       t.ruby_opts = ["--dev"] if defined?(JRUBY_VERSION)
     }
