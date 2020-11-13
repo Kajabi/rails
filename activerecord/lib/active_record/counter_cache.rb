@@ -40,7 +40,16 @@ module ActiveRecord
           unscoped.where(primary_key => object.id).update_all(
             counter_name => object.send(counter_association).count(:all)
           )
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          puts '************'
+          puts counter_table_name
+          puts '************'
+          Array.wrap(id).each do |idx|
+            sql = "delete from :counter_table_name where parent_id=:parent_id"
+            connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, parent_id: idx]))
+          end
         end
+
         return true
       end
 
@@ -73,28 +82,27 @@ module ActiveRecord
       #   # UPDATE posts
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
-      def update_counters(id, counters)
-        updates = counters.map do |counter_name, value|
-          operator = value < 0 ? '-' : '+'
-          quoted_column = connection.quote_column_name(counter_name)
-          "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
-        end
+      def update_counters(id, counters) #TODO - add switch for using custom or default impl
+        # updates = counters.map do |counter_name, value|
+        #   operator = value < 0 ? '-' : '+'
+        #   quoted_column = connection.quote_column_name(counter_name)
+        #   "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
+        # end
+
+        # unscoped.where(primary_key => id).update_all updates.join(', ')
         counters.map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
-          puts "------------------------"
+          puts "------------------"
           puts counter_table_name
           puts "------------------"
           operator = value < 0 ? '-' : '+'
           puts id.class
           Array.wrap(id).each do |idx|
-            sql = "insert into #{counter_table_name}(parent_id, increment) values(#{idx}, 1)
-
-            connection.execute("insert into #{counter_table_name}(parent_id, increment) values(#{idx}, 1)")
-            puts connection.execute("select * from #{table_name}_#{counter_name}s where parent_id=#{idx}")
+            sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, idx: idx, increment_by: value]))
+            puts connection.execute(sanitize_sql_array(["select * from :counter_table_name where parent_id=:idx", counter_table_name: counter_table_name, idx: idx]))
           end
         end
-
-        unscoped.where(primary_key => id).update_all updates.join(', ')
       end
 
       # Increment a numeric field by one, via a direct SQL update.
