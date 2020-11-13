@@ -79,6 +79,20 @@ module ActiveRecord
           quoted_column = connection.quote_column_name(counter_name)
           "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
         end
+        counters.map do |counter_name, value|
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          puts "------------------------"
+          puts counter_table_name
+          puts "------------------"
+          operator = value < 0 ? '-' : '+'
+          puts id.class
+          Array.wrap(id).each do |idx|
+            sql = "insert into #{counter_table_name}(parent_id, increment) values(#{idx}, 1)
+
+            connection.execute("insert into #{counter_table_name}(parent_id, increment) values(#{idx}, 1)")
+            puts connection.execute("select * from #{table_name}_#{counter_name}s where parent_id=#{idx}")
+          end
+        end
 
         unscoped.where(primary_key => id).update_all updates.join(', ')
       end
@@ -100,6 +114,11 @@ module ActiveRecord
       #   # Increment the posts_count column for the record with an id of 5
       #   DiscussionBoard.increment_counter(:posts_count, 5)
       def increment_counter(counter_name, id)
+        puts "---------------------------------"
+        puts "Counter Name: #{counter_name}"
+        puts id
+        puts "---------------------------------"
+
         update_counters(id, counter_name => 1)
       end
 

@@ -215,7 +215,7 @@ GEM
       redis-namespace
       simple_uuid
     que (0.14.1)
-    racc (1.4.14)
+    racc (1.5.1)
     rack (2.0.4)
     rack-cache (1.7.1)
       rack (>= 0.4)
@@ -356,7 +356,7 @@ DEPENDENCIES
   qu-redis
   que
   queue_classic!
-  racc (>= 1.4.6)
+  racc (>= 1.4.16)
   rack-cache (~> 1.2)
   rails!
   rake (>= 11.1)

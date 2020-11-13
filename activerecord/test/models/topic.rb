@@ -73,6 +73,14 @@ class Topic < ActiveRecord::Base
     write_attribute(:approved, val)
   end
 
+  def replies_count
+    puts "++++++++++++"
+    puts ActiveRecord::Base.connection.execute("select sum(increment) from topics_replies_counts where parent_id = ?", id)
+    puts "++++++++++++"
+    self.read_attribute(:replies_count) # + ActiveRecord::Base.connection.execute("select sum(increment) from topics_replies_counts where parent_id = ?", id)
+
+  end
+
   protected
 
     def default_written_on
