@@ -651,6 +651,11 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :people_friends_too_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
   create_table :peoples_treasures, id: false, force: true do |t|
     t.column :rich_person_id, :integer
     t.column :treasure_id, :integer

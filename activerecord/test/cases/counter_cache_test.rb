@@ -149,22 +149,23 @@ class CounterCacheTest < ActiveRecord::TestCase
     end
   end
 
-  # test "reset the right counter if two have the same foreign key" do
-  #   michael = people(:michael)
-  #   assert_nothing_raised do
-  #     Person.reset_counters(michael.id, :friends_too)
-  #   end
-  # end
+  test "reset the right counter if two have the same foreign key" do
+    michael = people(:michael)
+    assert_nothing_raised do
+      Person.reset_counters(michael.id, :friends_too)
+    end
+  end
 
-  # test "reset counter of has_many :through association" do
-  #   subscriber = subscribers('second')
-  #   Subscriber.reset_counters(subscriber.id, 'books')
-  #   Subscriber.increment_counter('books_count', subscriber.id)
+  test "reset counter of has_many :through association" do
+    subscriber = subscribers('second')
+    Subscriber.reset_counters(subscriber.id, 'books')
+    Subscriber.increment_counter('books_count', subscriber.id)
 
-  #   assert_difference 'subscriber.reload.books_count', -1 do
-  #     Subscriber.reset_counters(subscriber.id, 'books')
-  #   end
-  # end
+    # assert_equal subcriber.books_count, 1
+    assert_difference 'subscriber.reload.books_count', -1 do
+      Subscriber.reset_counters(subscriber.id, 'books')
+    end
+  end
 
    test "the passed symbol needs to be an association name or counter name" do
      e = assert_raises(ArgumentError) do
