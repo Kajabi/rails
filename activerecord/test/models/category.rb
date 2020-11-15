@@ -29,6 +29,11 @@ class Category < ActiveRecord::Base
   has_many :authors_with_select, -> { select 'authors.*, categorizations.post_id' }, :through => :categorizations, :source => :author
 
   scope :general, -> { where(:name => 'General') }
+
+  def categorizations_count
+    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from categories_categorizations_counts where parent_id = #{id}")[0]["sum"].to_i
+    read_attribute(:categorizations_count).to_i + sum unless read_attribute(:categorizations_count).nil? && sum == 0
+  end
 end
 
 class SpecialCategory < Category

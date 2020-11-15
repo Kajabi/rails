@@ -31,71 +31,71 @@ class CounterCacheTest < ActiveRecord::TestCase
     @topic = Topic.find(1)
   end
 
-  # test "increment counter" do
-  #   assert_difference '@topic.reload.replies_count' do
-  #     Topic.increment_counter(:replies_count, @topic.id)
-  #   end
-  # end
+  test "increment counter" do
+    assert_difference '@topic.reload.replies_count' do
+      Topic.increment_counter(:replies_count, @topic.id)
+    end
+  end
 
-  # test "decrement counter" do
-  #   assert_difference '@topic.reload.replies_count', -1 do
-  #     Topic.decrement_counter(:replies_count, @topic.id)
-  #   end
-  # end
+  test "decrement counter" do
+    assert_difference '@topic.reload.replies_count', -1 do
+      Topic.decrement_counter(:replies_count, @topic.id)
+    end
+  end
 
-  # test "reset counters" do
-  #   # throw the count off by 1
-  #   Topic.increment_counter(:replies_count, @topic.id)
+  test "reset counters" do
+    # throw the count off by 1
+    Topic.increment_counter(:replies_count, @topic.id)
 
-  #   # check that it gets reset
-  #   assert_difference '@topic.reload.replies_count', -1 do
-  #     Topic.reset_counters(@topic.id, :replies)
-  #   end
-  # end
+    # check that it gets reset
+    assert_difference '@topic.reload.replies_count', -1 do
+      Topic.reset_counters(@topic.id, :replies)
+    end
+  end
 
-  # test "reset counters by counter name" do
-  #   # throw the count off by 1
-  #   Topic.increment_counter(:replies_count, @topic.id)
+  test "reset counters by counter name" do
+    # throw the count off by 1
+    Topic.increment_counter(:replies_count, @topic.id)
 
-  #   # check that it gets reset
-  #   assert_difference '@topic.reload.replies_count', -1 do
-  #     Topic.reset_counters(@topic.id, :replies_count)
-  #   end
-  # end
+    # check that it gets reset
+    assert_difference '@topic.reload.replies_count', -1 do
+      Topic.reset_counters(@topic.id, :replies_count)
+    end
+  end
 
-  #  test 'reset multiple counters' do
-  #    Topic.update_counters @topic.id, replies_count: 1, unique_replies_count: 1
-  #    assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], -1 do
-  #      Topic.reset_counters(@topic.id, :replies, :unique_replies)
-  #    end
-  #  end
+   test 'reset multiple counters' do
+     Topic.update_counters @topic.id, replies_count: 1, unique_replies_count: 1
+     assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], -1 do
+       Topic.reset_counters(@topic.id, :replies, :unique_replies)
+     end
+   end
 
-  #  test "reset counters with string argument" do
-  #    Topic.increment_counter('replies_count', @topic.id)
+   test "reset counters with string argument" do
+     Topic.increment_counter('replies_count', @topic.id)
 
-  #    assert_difference '@topic.reload.replies_count', -1 do
-  #      Topic.reset_counters(@topic.id, 'replies')
-  #    end
-  #  end
+     assert_difference '@topic.reload.replies_count', -1 do
+       Topic.reset_counters(@topic.id, 'replies')
+     end
+   end
 
-  #  test "reset counters with modularized and camelized classnames" do
-  #    special = SpecialTopic.create!(:title => 'Special')
-  #    SpecialTopic.increment_counter(:replies_count, special.id)
+   test "reset counters with modularized and camelized classnames" do
+     special = SpecialTopic.create!(:title => 'Special')
+     SpecialTopic.increment_counter(:replies_count, special.id)
 
-  #    assert_difference 'special.reload.replies_count', -1 do
-  #      SpecialTopic.reset_counters(special.id, :special_replies)
-  #    end
-  #  end
+     assert_difference 'special.reload.replies_count', -1 do
+       SpecialTopic.reset_counters(special.id, :special_replies)
+     end
+   end
 
-  #  test "reset counter with belongs_to which has class_name" do
-  #    car = cars(:honda)
-  #    assert_nothing_raised do
-  #      Car.reset_counters(car.id, :engines)
-  #    end
-  #    assert_nothing_raised do
-  #      Car.reset_counters(car.id, :wheels)
-  #    end
-  #  end
+   test "reset counter with belongs_to which has class_name" do
+     car = cars(:honda)
+     assert_nothing_raised do
+       Car.reset_counters(car.id, :engines)
+     end
+     assert_nothing_raised do
+       Car.reset_counters(car.id, :wheels)
+     end
+   end
 
    test "reset the right counter if two have the same class_name" do
      david = dog_lovers(:david)
@@ -111,14 +111,14 @@ class CounterCacheTest < ActiveRecord::TestCase
      end
    end
 
-  # test "update counter with initial null value" do
-  #   category = categories(:general)
-  #   assert_equal 2, category.categorizations.count
-  #   assert_nil category.categorizations_count
+  test "update counter with initial null value" do
+    category = categories(:general)
+    assert_equal 2, category.categorizations.count
+    assert_nil category.categorizations_count
 
-  #   Category.update_counters(category.id, :categorizations_count => category.categorizations.count)
-  #   assert_equal 2, category.reload.categorizations_count
-  # end
+    Category.update_counters(category.id, :categorizations_count => category.categorizations.count)
+    assert_equal 2, category.reload.categorizations_count
+  end
 
    test "update counter for decrement" do
      assert_difference '@topic.reload.replies_count', -3 do
@@ -140,14 +140,14 @@ class CounterCacheTest < ActiveRecord::TestCase
      end
    end
 
-  # test "update other counters on parent destroy" do
-  #   david, joanna = dog_lovers(:david, :joanna)
-  #   joanna = joanna # squelch a warning
+  test "update other counters on parent destroy" do
+    david, joanna = dog_lovers(:david, :joanna)
+    joanna = joanna # squelch a warning
 
-  #   assert_difference 'joanna.reload.dogs_count', -1 do
-  #     david.destroy
-  #   end
-  # end
+    assert_difference 'joanna.reload.dogs_count', -1 do
+      david.destroy
+    end
+  end
 
   # test "reset the right counter if two have the same foreign key" do
   #   michael = people(:michael)
@@ -182,14 +182,14 @@ class CounterCacheTest < ActiveRecord::TestCase
   #   end
   # end
 
-   #test "counters are updated both in memory and in the database on create" do
-   #  car = Car.new(engines_count: 0)
-   #  car.engines = [Engine.new, Engine.new]
-   #  car.save!
+  #  test "counters are updated both in memory and in the database on create" do
+  #   car = Car.new(engines_count: 0)
+  #   car.engines = [Engine.new, Engine.new]
+  #   car.save!
 
-   #  assert_equal 2, car.engines_count
-   #  assert_equal 2, car.reload.engines_count
-   #end
+  #   assert_equal 2, car.engines_count
+  #   assert_equal 2, car.reload.engines_count
+  #  end
 
   # test "counter caches are updated in memory when the default value is nil" do
   #   car = Car.new(engines_count: nil)
@@ -200,15 +200,15 @@ class CounterCacheTest < ActiveRecord::TestCase
   #   assert_equal 2, car.reload.engines_count
   # end
 
-   test "update counters in a polymorphic relationship" do
-     aircraft = Aircraft.create!
+  #  test "update counters in a polymorphic relationship" do
+  #    aircraft = Aircraft.create!
 
-     assert_difference 'aircraft.reload.wheels_count' do
-       aircraft.wheels << Wheel.create!
-     end
+  #    assert_difference 'aircraft.reload.wheels_count' do
+  #      aircraft.wheels << Wheel.create!
+  #    end
 
-     assert_difference 'aircraft.reload.wheels_count', -1 do
-       aircraft.wheels.first.destroy
-     end
-   end
+  #    assert_difference 'aircraft.reload.wheels_count', -1 do
+  #      aircraft.wheels.first.destroy
+  #    end
+  #  end
 end

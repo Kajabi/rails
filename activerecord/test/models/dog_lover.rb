@@ -18,4 +18,12 @@ class DogLover < ActiveRecord::Base
     sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from dog_lovers_bred_dogs_counts where parent_id = #{id}")[0]["sum"].to_i
     self.read_attribute(:bred_dogs_count) + sum
   end
+
+  def dogs_count
+    puts "++++++++++++"
+    puts ActiveRecord::Base.connection.execute("select sum(increment) as sum from dog_lovers_dogs_counts where parent_id = #{id}")[0]["sum"].to_i
+    puts "++++++++++++"
+    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from dog_lovers_dogs_counts where parent_id = #{id}")[0]["sum"].to_i
+    self.read_attribute(:dogs_count) + sum
+  end
 end

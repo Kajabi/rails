@@ -18,6 +18,17 @@ class Car < ActiveRecord::Base
   scope :incl_engines, -> { includes(:engines) }
 
   scope :order_using_new_style,  -> { order('name asc') }
+
+  def engines_count
+    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from cars_engines_counts where parent_id = #{id}")[0]["sum"].to_i
+    self.read_attribute(:engines_count) + sum
+  end
+
+  def wheels_count
+    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from cars_wheels_counts where parent_id = #{id}")[0]["sum"].to_i
+    self.read_attribute(:wheels_count) + sum
+  end
+
 end
 
 class CoolCar < Car
