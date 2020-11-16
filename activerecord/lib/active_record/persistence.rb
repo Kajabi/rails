@@ -343,19 +343,14 @@ module ActiveRecord
     # This means that any other modified attributes will still be dirty.
     # Validations and callbacks are skipped. Returns +self+.
     def increment!(attribute, by = 1)
-      puts "-------- increment! ---------------"
-      puts "attribute before in memory increment: #{attribute} #{self[attribute]}"
-      increment(attribute, by)
-      puts "attribute after in memory increment: #{attribute} #{self[attribute]}"
-      puts "public send of #{attribute} #{public_send(attribute)}"
-      puts "attribute_changed?(#{attribute}): #{attribute_changed?(attribute)}"
-      puts "attribute_was: #{(attribute_was(attribute.to_s) || 0)}"
-
-      change = public_send(attribute) - (attribute_was(attribute.to_s) || 0)
-      self.class.update_counters(id, attribute => change)
-      clear_attribute_change(attribute) # eww
-      puts "attribute_changed?(#{attribute}): #{attribute_changed?(attribute)}"
-      puts "++++++++++ increment! +++++++++++++"
+      if attribute == "lock_version"
+        increment(attribute, by)
+        change = public_send(attribute) - (attribute_was(attribute.to_s) || 0)
+        self.class.update_counters(id, attribute => change)
+        clear_attribute_change(attribute) # eww
+      else
+        self.class.update_counters(id, attribute => by)
+      end
       self
     end
 

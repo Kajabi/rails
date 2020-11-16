@@ -189,17 +189,17 @@ class CounterCacheTest < ActiveRecord::TestCase
     car.save!
 
     assert_equal 2, car.engines_count
-    # assert_equal 2, car.reload.engines_count
+    assert_equal 2, car.reload.engines_count
   end
 
-  # test "counter caches are updated in memory when the default value is nil" do
-  #   car = Car.new(engines_count: nil)
-  #   car.engines = [Engine.new, Engine.new]
-  #   car.save!
+  test "counter caches are updated in memory when the default value is nil" do
+    car = Car.new(engines_count: nil)
+    car.engines = [Engine.new, Engine.new]
+    car.save!
 
-  #   assert_equal 2, car.engines_count
-  #   assert_equal 2, car.reload.engines_count
-  # end
+    assert_equal 2, car.engines_count
+    assert_equal 2, car.reload.engines_count
+  end
 
   test "update counters in a polymorphic relationship" do
     aircraft = Aircraft.create!
