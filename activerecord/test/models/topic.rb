@@ -74,9 +74,6 @@ class Topic < ActiveRecord::Base
   end
 
   def replies_count
-    puts "++++++++++++"
-    puts ActiveRecord::Base.connection.execute("select sum(increment) as sum from topics_replies_counts where parent_id = #{id}")[0]["sum"].to_i
-    puts "++++++++++++"
     sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from topics_replies_counts where parent_id = #{id}")[0]["sum"].to_i
     self.read_attribute(:replies_count) + sum
   end

@@ -29,6 +29,14 @@ class CounterCacheTest < ActiveRecord::TestCase
 
   setup do
     @topic = Topic.find(1)
+    @dog = Dog.find(1)
+  end
+
+  test "hello world" do
+    puts ENV["RAILS_ENV"]
+    # puts "--------- #{@dog.methods.sort}"
+    byebug
+    assert_equal "hello!!!!!!!!!!!!", @dog.test_dogs_count
   end
 
   test "increment counter" do
