@@ -141,10 +141,10 @@ ActiveRecord::Schema.define do
     t.integer :increment
   end
 
-  create_table :cars_lock_versions, force: true do |t|
-    t.integer :parent_id
-    t.integer :increment
-  end
+  # create_table :cars_lock_versions, force: true do |t|
+  #   t.integer :parent_id
+  #   t.integer :increment
+  # end
 
 
   create_table :carriers, force: true

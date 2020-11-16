@@ -83,22 +83,26 @@ module ActiveRecord
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
       def update_counters(id, counters) #TODO - add switch for using custom or default impl
-        # updates = counters.map do |counter_name, value|
-        #   operator = value < 0 ? '-' : '+'
-        #   quoted_column = connection.quote_column_name(counter_name)
-        #   "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
-        # end
+        updates = counters.select{|key| key == "lock_version" }.map do |counter_name, value|
+          operator = value < 0 ? '-' : '+'
+          quoted_column = connection.quote_column_name(counter_name)
+          "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
+        end
 
-        # unscoped.where(primary_key => id).update_all updates.join(', ')
-        counters.map do |counter_name, value|
+        unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
+
+        counters.reject{ |counter_name| counter_name == "lock_version" }.map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
           puts "------------------"
           puts counter_table_name
           puts "------------------"
           operator = value < 0 ? '-' : '+'
+          puts "#{operator} #{value}"
           puts id.class
           Array.wrap(id).each do |idx|
             sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            # ISSUE: This next line is a bit of a hack because of how in memory decrements work
+            value = value == 0 ? -1 : value
             connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, idx: idx, increment_by: value]))
             puts connection.execute(sanitize_sql_array(["select * from :counter_table_name where parent_id=:idx", counter_table_name: counter_table_name, idx: idx]))
           end
@@ -123,6 +127,7 @@ module ActiveRecord
       #   DiscussionBoard.increment_counter(:posts_count, 5)
       def increment_counter(counter_name, id)
         puts "---------------------------------"
+        puts "Increment"
         puts "Counter Name: #{counter_name}"
         puts id
         puts "---------------------------------"
@@ -145,6 +150,12 @@ module ActiveRecord
       #   # Decrement the posts_count column for the record with an id of 5
       #   DiscussionBoard.decrement_counter(:posts_count, 5)
       def decrement_counter(counter_name, id)
+        puts "---------------------------------"
+        puts "Decrement"
+        puts "Counter Name: #{counter_name}"
+        puts id
+        puts "---------------------------------"
+
         update_counters(id, counter_name => -1)
       end
     end
