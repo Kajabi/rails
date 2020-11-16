@@ -174,23 +174,23 @@ class CounterCacheTest < ActiveRecord::TestCase
      assert_equal "'Topic' has no association called 'undefined_count'", e.message
    end
 
-  # test "reset counter works with select declared on association" do
-  #   special = SpecialTopic.create!(:title => 'Special')
-  #   SpecialTopic.increment_counter(:replies_count, special.id)
+  test "reset counter works with select declared on association" do
+    special = SpecialTopic.create!(:title => 'Special')
+    SpecialTopic.increment_counter(:replies_count, special.id)
 
-  #   assert_difference 'special.reload.replies_count', -1 do
-  #     SpecialTopic.reset_counters(special.id, :lightweight_special_replies)
-  #   end
-  # end
+    assert_difference 'special.reload.replies_count', -1 do
+      SpecialTopic.reset_counters(special.id, :lightweight_special_replies)
+    end
+  end
 
-  #  test "counters are updated both in memory and in the database on create" do
+  # test "counters are updated both in memory and in the database on create" do
   #   car = Car.new(engines_count: 0)
   #   car.engines = [Engine.new, Engine.new]
   #   car.save!
 
   #   assert_equal 2, car.engines_count
   #   assert_equal 2, car.reload.engines_count
-  #  end
+  # end
 
   # test "counter caches are updated in memory when the default value is nil" do
   #   car = Car.new(engines_count: nil)
@@ -201,15 +201,15 @@ class CounterCacheTest < ActiveRecord::TestCase
   #   assert_equal 2, car.reload.engines_count
   # end
 
-  #  test "update counters in a polymorphic relationship" do
-  #    aircraft = Aircraft.create!
+  test "update counters in a polymorphic relationship" do
+    aircraft = Aircraft.create!
 
-  #    assert_difference 'aircraft.reload.wheels_count' do
-  #      aircraft.wheels << Wheel.create!
-  #    end
+    assert_difference 'aircraft.reload.wheels_count' do
+      aircraft.wheels << Wheel.create!
+    end
 
-  #    assert_difference 'aircraft.reload.wheels_count', -1 do
-  #      aircraft.wheels.first.destroy
-  #    end
-  #  end
+    assert_difference 'aircraft.reload.wheels_count', -1 do
+      aircraft.wheels.first.destroy
+    end
+  end
 end
