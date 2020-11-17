@@ -10,7 +10,7 @@ class Car < ActiveRecord::Base
 
   has_many :tyres
   has_many :engines, :dependent => :destroy, inverse_of: :my_car, counter_cache_override: :engines_count
-  has_many :wheels, :as => :wheelable, :dependent => :destroy
+  has_many :wheels, :as => :wheelable, :dependent => :destroy, counter_cache_override: :wheels_count
 
   has_many :price_estimates, :as => :estimate_of
 
@@ -18,12 +18,6 @@ class Car < ActiveRecord::Base
   scope :incl_engines, -> { includes(:engines) }
 
   scope :order_using_new_style,  -> { order('name asc') }
-
-  def wheels_count
-    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from cars_wheels_counts where parent_id = #{id}")[0]["sum"].to_i
-    self.read_attribute(:wheels_count).to_i + sum unless read_attribute(:wheels_count).nil? && sum == 0
-  end
-
 end
 
 class CoolCar < Car

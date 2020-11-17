@@ -32,10 +32,10 @@ class Topic < ActiveRecord::Base
     end
   end
 
-  has_many :replies, dependent: :destroy, foreign_key: "parent_id", autosave: true
+  has_many :replies, dependent: :destroy, foreign_key: "parent_id", autosave: true, counter_cache_override: :replies_count
   has_many :approved_replies, -> { approved }, class_name: 'Reply', foreign_key: "parent_id", counter_cache: 'replies_count'
 
-  has_many :unique_replies, :dependent => :destroy, :foreign_key => "parent_id"
+  has_many :unique_replies, :dependent => :destroy, :foreign_key => "parent_id", counter_cache_override: :unique_replies_count
   has_many :silly_unique_replies, :dependent => :destroy, :foreign_key => "parent_id"
 
   serialize :content
@@ -72,17 +72,6 @@ class Topic < ActiveRecord::Base
     @custom_approved = val
     write_attribute(:approved, val)
   end
-
-  def replies_count
-    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from topics_replies_counts where parent_id = #{id}")[0]["sum"].to_i
-    self.read_attribute(:replies_count) + sum
-  end
-
-  def unique_replies_count
-    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from topics_unique_replies_counts where parent_id = #{id}")[0]["sum"].to_i
-    self.read_attribute(:unique_replies_count) + sum
-  end
-
 
   protected
 
