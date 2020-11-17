@@ -33,10 +33,7 @@ class CounterCacheTest < ActiveRecord::TestCase
   end
 
   test "hello world" do
-    puts ENV["RAILS_ENV"]
-    # puts "--------- #{@dog.methods.sort}"
-    # byebug
-    assert_equal "hello!!!!!!!!!!!!", @c.test_engines_count
+    assert_equal 0, @c.engines_count
   end
 
   test "increment counter" do
