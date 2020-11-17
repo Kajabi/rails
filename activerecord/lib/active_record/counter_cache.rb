@@ -41,9 +41,6 @@ module ActiveRecord
             counter_name => object.send(counter_association).count(:all)
           )
           counter_table_name = "#{table_name}_#{counter_name}s"
-          puts '************'
-          puts counter_table_name
-          puts '************'
           Array.wrap(id).each do |idx|
             sql = "delete from :counter_table_name where parent_id=:parent_id"
             connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, parent_id: idx]))
@@ -83,6 +80,11 @@ module ActiveRecord
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
       def update_counters(id, counters) #TODO - add switch for using custom or default impl
+        # puts counters.keys
+        puts "-----"
+        puts reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact
+        puts "-----"
+
         updates = counters.select{|key| key == "lock_version" }.map do |counter_name, value|
           operator = value < 0 ? '-' : '+'
           quoted_column = connection.quote_column_name(counter_name)
@@ -93,9 +95,6 @@ module ActiveRecord
 
         counters.reject{ |counter_name| counter_name == "lock_version" }.map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
-          puts "------------------"
-          puts counter_table_name
-          puts "------------------"
           operator = value < 0 ? '-' : '+'
           puts "#{operator} #{value}"
           puts id.class
@@ -108,6 +107,8 @@ module ActiveRecord
           end
         end
       end
+
+
 
       # Increment a numeric field by one, via a direct SQL update.
       #
@@ -127,11 +128,9 @@ module ActiveRecord
       #   DiscussionBoard.increment_counter(:posts_count, 5)
       def increment_counter(counter_name, id)
         puts "---------------------------------"
-        puts "Increment"
-        puts "Counter Name: #{counter_name}"
-        puts id
+        puts "increment_counter"
+        puts "counter_name: #{counter_name}"
         puts "---------------------------------"
-
         update_counters(id, counter_name => 1)
       end
 
@@ -150,12 +149,6 @@ module ActiveRecord
       #   # Decrement the posts_count column for the record with an id of 5
       #   DiscussionBoard.decrement_counter(:posts_count, 5)
       def decrement_counter(counter_name, id)
-        puts "---------------------------------"
-        puts "Decrement"
-        puts "Counter Name: #{counter_name}"
-        puts id
-        puts "---------------------------------"
-
         update_counters(id, counter_name => -1)
       end
     end
@@ -190,6 +183,19 @@ module ActiveRecord
         end
 
         affected_rows
+      end
+
+      def counter_overrides
+        # TODO memoize
+        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
+      end
+
+      def counters_using_override(counters)
+        counters.select { |key,_|  counter_overrides.include?(key) }
+      end
+
+      def counters_with_default(counters)
+        counters.reject { |key,_|  counter_overrides.include?(key) }
       end
 
       def each_counter_cached_associations
