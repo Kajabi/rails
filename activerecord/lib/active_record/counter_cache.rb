@@ -80,12 +80,7 @@ module ActiveRecord
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
       def update_counters(id, counters) #TODO - add switch for using custom or default impl
-        # puts counters.keys
-        puts "-----"
-        puts reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact
-        puts "-----"
-
-        updates = counters.select{|key| key == "lock_version" }.map do |counter_name, value|
+        updates = counters_with_default(counters).map do |counter_name, value|
           operator = value < 0 ? '-' : '+'
           quoted_column = connection.quote_column_name(counter_name)
           "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
@@ -93,17 +88,15 @@ module ActiveRecord
 
         unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
 
-        counters.reject{ |counter_name| counter_name == "lock_version" }.map do |counter_name, value|
+        counters_using_override(counters).map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
           operator = value < 0 ? '-' : '+'
-          puts "#{operator} #{value}"
-          puts id.class
           Array.wrap(id).each do |idx|
-            sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            #sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            sql = "insert into #{counter_table_name}(parent_id, increment) values(:idx, :increment_by)"
             # ISSUE: This next line is a bit of a hack because of how in memory decrements work
             value = value == 0 ? -1 : value
-            connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, idx: idx, increment_by: value]))
-            puts connection.execute(sanitize_sql_array(["select * from :counter_table_name where parent_id=:idx", counter_table_name: counter_table_name, idx: idx]))
+            connection.execute(sanitize_sql_array([sql, idx: idx, increment_by: value]))
           end
         end
       end
@@ -127,10 +120,6 @@ module ActiveRecord
       #   # Increment the posts_count column for the record with an id of 5
       #   DiscussionBoard.increment_counter(:posts_count, 5)
       def increment_counter(counter_name, id)
-        puts "---------------------------------"
-        puts "increment_counter"
-        puts "counter_name: #{counter_name}"
-        puts "---------------------------------"
         update_counters(id, counter_name => 1)
       end
 
@@ -150,6 +139,20 @@ module ActiveRecord
       #   DiscussionBoard.decrement_counter(:posts_count, 5)
       def decrement_counter(counter_name, id)
         update_counters(id, counter_name => -1)
+      end
+
+      private
+      def counter_overrides
+        # TODO memoize
+        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
+      end
+
+      def counters_using_override(counters)
+        counters.select { |key,_|  counter_overrides.include?(key) }
+      end
+
+      def counters_with_default(counters)
+        counters.reject { |key,_|  counter_overrides.include?(key) }
       end
     end
 
@@ -183,19 +186,6 @@ module ActiveRecord
         end
 
         affected_rows
-      end
-
-      def counter_overrides
-        # TODO memoize
-        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
-      end
-
-      def counters_using_override(counters)
-        counters.select { |key,_|  counter_overrides.include?(key) }
-      end
-
-      def counters_with_default(counters)
-        counters.reject { |key,_|  counter_overrides.include?(key) }
       end
 
       def each_counter_cached_associations
