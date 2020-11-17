@@ -21,27 +21,6 @@ module ActiveRecord::Associations::Builder # :nodoc:
     def self.define_accessors(mixin, reflection)
       super
       add_counter_cache_methods mixin
-      add_counter_cache_getter_method(mixin, reflection)
-    end
-
-    def self.add_counter_cache_getter_method(mixin, reflection)
-      #puts "mixin #{mixin.methods.sort} ***************"
-     # puts "********** reflection: #{reflection.methods.sort}**************"
-      mixin.class_eval do
-
-      #        sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from cars_wheels_counts where parent_id = #{id}")[0]["sum"].to_i
-      #       self.read_attribute(:wheels_count).to_i + sum unless read_attribute(:wheels_count).nil? && sum == 0
-
-      # reflection.class.define_method "test_#{reflection.counter_cache_column}" do
-      #   reflection.class_name.to_s
-      # end
-
-      define_method "test_#{reflection.counter_cache_column}" do
-        reflection.class_name.to_s
-      end
-
-
-      end
     end
 
     def self.add_counter_cache_methods(mixin)
