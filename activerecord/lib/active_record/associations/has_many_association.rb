@@ -67,7 +67,10 @@ module ActiveRecord
         # If the collection is empty the target is set to an empty array and
         # the loaded flag is set to true as well.
         def count_records
-          count = if reflection.has_cached_counter?
+          count = if reflection.has_cached_counter? &&
+            reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
+            owner.send(reflection.counter_cache_column.to_sym) || 0
+          elsif reflection.has_cached_counter?
             owner._read_attribute reflection.counter_cache_column
           else
             scope.count
@@ -90,6 +93,7 @@ module ActiveRecord
         def update_counter_in_memory(difference, reflection = reflection())
           if reflection.counter_must_be_updated_by_has_many?
             counter = reflection.counter_cache_column
+            return if counter.to_s == reflection.options[:counter_cache_override].to_s
             owner.increment(counter, difference)
             owner.send(:clear_attribute_change, counter) # eww
           end

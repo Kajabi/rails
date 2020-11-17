@@ -42,8 +42,8 @@ module ActiveRecord
           )
           counter_table_name = "#{table_name}_#{counter_name}s"
           Array.wrap(id).each do |idx|
-            sql = "delete from :counter_table_name where parent_id=:parent_id"
-            connection.execute(sanitize_sql_array([sql, counter_table_name: counter_table_name, parent_id: idx]))
+            sql = "delete from  #{counter_table_name} where parent_id=:parent_id"
+            connection.exec_query(sanitize_sql_array([sql, parent_id: idx]))
           end
         end
 
@@ -96,7 +96,7 @@ module ActiveRecord
             sql = "insert into #{counter_table_name}(parent_id, increment) values(:idx, :increment_by)"
             # ISSUE: This next line is a bit of a hack because of how in memory decrements work
             value = value == 0 ? -1 : value
-            connection.execute(sanitize_sql_array([sql, idx: idx, increment_by: value]))
+            connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
           end
         end
       end
