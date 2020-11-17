@@ -103,6 +103,16 @@ module ActiveRecord::Associations::Builder # :nodoc:
       name = reflection.name
       define_readers(mixin, name)
       define_writers(mixin, name)
+      define_counter_cache_getter_override(model, reflection) if reflection.options[:counter_cache_override]
+    end
+
+    def self.define_counter_cache_getter_override(model, reflection)
+      byebug if reflection.name == :engines
+      cc_getter = reflection.options[:counter_cache_override].to_s
+      model.define_method "test_#{cc_getter}" do
+        sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from #{model.table_name}_#{cc_getter}s where parent_id = #{id}")[0]["sum"].to_i
+        self.read_attribute(cc_getter).to_i + sum unless read_attribute(cc_getter).nil? && sum == 0
+      end
     end
 
     def self.define_readers(mixin, name)
