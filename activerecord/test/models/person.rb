@@ -10,7 +10,7 @@ class Person < ActiveRecord::Base
 
   has_many :friendships, foreign_key: 'friend_id'
   # friends_too exists to test a bug, and probably shouldn't be used elsewhere
-  has_many :friends_too, foreign_key: 'friend_id', class_name: 'Friendship'
+  has_many :friends_too, foreign_key: 'friend_id', class_name: 'Friendship', counter_cache_override: :friends_too_count
   has_many :followers, through: :friendships
 
   has_many :references
@@ -37,11 +37,6 @@ class Person < ActiveRecord::Base
   has_many :essays, primary_key: "first_name", foreign_key: "writer_id"
 
   scope :males,   -> { where(:gender => 'M') }
-
-  def friends_too_count
-    sum = ActiveRecord::Base.connection.execute("select sum(increment) as sum from people_friends_too_counts where parent_id = #{id}")[0]["sum"].to_i
-    self.read_attribute(:friends_too_count) + sum
-  end
 end
 
 class PersonWithDependentDestroyJobs < ActiveRecord::Base
