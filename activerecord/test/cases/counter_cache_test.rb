@@ -29,6 +29,11 @@ class CounterCacheTest < ActiveRecord::TestCase
 
   setup do
     @topic = Topic.find(1)
+    @c = Car.find(1)
+  end
+
+  test "hello world" do
+    assert_equal 0, @c.engines_count
   end
 
   test "increment counter" do
@@ -63,53 +68,53 @@ class CounterCacheTest < ActiveRecord::TestCase
     end
   end
 
-  test 'reset multiple counters' do
-    Topic.update_counters @topic.id, replies_count: 1, unique_replies_count: 1
-    assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], -1 do
-      Topic.reset_counters(@topic.id, :replies, :unique_replies)
-    end
-  end
+   test 'reset multiple counters' do
+     Topic.update_counters @topic.id, replies_count: 1, unique_replies_count: 1
+     assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], -1 do
+       Topic.reset_counters(@topic.id, :replies, :unique_replies)
+     end
+   end
 
-  test "reset counters with string argument" do
-    Topic.increment_counter('replies_count', @topic.id)
+   test "reset counters with string argument" do
+     Topic.increment_counter('replies_count', @topic.id)
 
-    assert_difference '@topic.reload.replies_count', -1 do
-      Topic.reset_counters(@topic.id, 'replies')
-    end
-  end
+     assert_difference '@topic.reload.replies_count', -1 do
+       Topic.reset_counters(@topic.id, 'replies')
+     end
+   end
 
-  test "reset counters with modularized and camelized classnames" do
-    special = SpecialTopic.create!(:title => 'Special')
-    SpecialTopic.increment_counter(:replies_count, special.id)
+   test "reset counters with modularized and camelized classnames" do
+     special = SpecialTopic.create!(:title => 'Special')
+     SpecialTopic.increment_counter(:replies_count, special.id)
 
-    assert_difference 'special.reload.replies_count', -1 do
-      SpecialTopic.reset_counters(special.id, :special_replies)
-    end
-  end
+     assert_difference 'special.reload.replies_count', -1 do
+       SpecialTopic.reset_counters(special.id, :special_replies)
+     end
+   end
 
-  test "reset counter with belongs_to which has class_name" do
-    car = cars(:honda)
-    assert_nothing_raised do
-      Car.reset_counters(car.id, :engines)
-    end
-    assert_nothing_raised do
-      Car.reset_counters(car.id, :wheels)
-    end
-  end
+   test "reset counter with belongs_to which has class_name" do
+     car = cars(:honda)
+     assert_nothing_raised do
+       Car.reset_counters(car.id, :engines)
+     end
+     assert_nothing_raised do
+       Car.reset_counters(car.id, :wheels)
+     end
+   end
 
-  test "reset the right counter if two have the same class_name" do
-    david = dog_lovers(:david)
+   test "reset the right counter if two have the same class_name" do
+     david = dog_lovers(:david)
 
     DogLover.increment_counter(:bred_dogs_count, david.id)
-    DogLover.increment_counter(:trained_dogs_count, david.id)
+     DogLover.increment_counter(:trained_dogs_count, david.id)
 
-    assert_difference 'david.reload.bred_dogs_count', -1 do
-      DogLover.reset_counters(david.id, :bred_dogs)
-    end
-    assert_difference 'david.reload.trained_dogs_count', -1 do
-      DogLover.reset_counters(david.id, :trained_dogs)
-    end
-  end
+     assert_difference 'david.reload.bred_dogs_count', -1 do
+       DogLover.reset_counters(david.id, :bred_dogs)
+     end
+     assert_difference 'david.reload.trained_dogs_count', -1 do
+       DogLover.reset_counters(david.id, :trained_dogs)
+     end
+   end
 
   test "update counter with initial null value" do
     category = categories(:general)
@@ -120,25 +125,25 @@ class CounterCacheTest < ActiveRecord::TestCase
     assert_equal 2, category.reload.categorizations_count
   end
 
-  test "update counter for decrement" do
-    assert_difference '@topic.reload.replies_count', -3 do
-      Topic.update_counters(@topic.id, :replies_count => -3)
-    end
-  end
+   test "update counter for decrement" do
+     assert_difference '@topic.reload.replies_count', -3 do
+       Topic.update_counters(@topic.id, :replies_count => -3)
+     end
+   end
 
-  test "update counters of multiple records" do
-    t1, t2 = topics(:first, :second)
+   test "update counters of multiple records" do
+     t1, t2 = topics(:first, :second)
 
-    assert_difference ['t1.reload.replies_count', 't2.reload.replies_count'], 2 do
-      Topic.update_counters([t1.id, t2.id], :replies_count => 2)
-    end
-  end
+     assert_difference ['t1.reload.replies_count', 't2.reload.replies_count'], 2 do
+       Topic.update_counters([t1.id, t2.id], :replies_count => 2)
+     end
+   end
 
-  test 'update multiple counters' do
-    assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], 2 do
-      Topic.update_counters @topic.id, replies_count: 2, unique_replies_count: 2
-    end
-  end
+   test 'update multiple counters' do
+     assert_difference ['@topic.reload.replies_count', '@topic.reload.unique_replies_count'], 2 do
+       Topic.update_counters @topic.id, replies_count: 2, unique_replies_count: 2
+     end
+   end
 
   test "update other counters on parent destroy" do
     david, joanna = dog_lovers(:david, :joanna)
@@ -161,17 +166,18 @@ class CounterCacheTest < ActiveRecord::TestCase
     Subscriber.reset_counters(subscriber.id, 'books')
     Subscriber.increment_counter('books_count', subscriber.id)
 
+    # assert_equal subcriber.books_count, 1
     assert_difference 'subscriber.reload.books_count', -1 do
       Subscriber.reset_counters(subscriber.id, 'books')
     end
   end
 
-  test "the passed symbol needs to be an association name or counter name" do
-    e = assert_raises(ArgumentError) do
-      Topic.reset_counters(@topic.id, :undefined_count)
-    end
-    assert_equal "'Topic' has no association called 'undefined_count'", e.message
-  end
+   test "the passed symbol needs to be an association name or counter name" do
+     e = assert_raises(ArgumentError) do
+       Topic.reset_counters(@topic.id, :undefined_count)
+     end
+     assert_equal "'Topic' has no association called 'undefined_count'", e.message
+   end
 
   test "reset counter works with select declared on association" do
     special = SpecialTopic.create!(:title => 'Special')

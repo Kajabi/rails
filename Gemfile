@@ -93,7 +93,7 @@ platforms :ruby, :mswin, :mswin64, :mingw, :x64_mingw do
   gem 'nokogiri', '>= 1.6.7.1'
 
   # Needed for compiling the ActionDispatch::Journey parser.
-  gem 'racc', '>=1.4.6', require: false
+  gem 'racc', '>=1.4.16', require: false
 
   # Active Record.
   gem 'sqlite3', '~> 1.3.6'

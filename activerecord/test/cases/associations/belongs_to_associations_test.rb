@@ -378,12 +378,17 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   def test_belongs_to_counter
     debate = Topic.create("title" => "debate")
     assert_equal 0, debate.read_attribute("replies_count"), "No replies yet"
+    assert_equal 0, debate.replies_count, "No replies yet"
+
 
     trash = debate.replies.create("title" => "blah!", "content" => "world around!")
-    assert_equal 1, Topic.find(debate.id).read_attribute("replies_count"), "First reply created"
+    assert_equal 0, Topic.find(debate.id).read_attribute("replies_count"), "Still 0 because we are storing in the separate table"
+    assert_equal 1, Topic.find(debate.id).replies_count, "First reply created"
 
     trash.destroy
-    assert_equal 0, Topic.find(debate.id).read_attribute("replies_count"), "First reply deleted"
+    assert_equal 0, Topic.find(debate.id).read_attribute("replies_count"), "Still 0 because we are storing in the separate table"
+    assert_equal 0, Topic.find(debate.id).replies_count, "First reply deleted"
+
   end
 
   def test_belongs_to_counter_with_assigning_nil
@@ -473,10 +478,12 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   def test_belongs_to_counter_after_save
     topic = Topic.create!(:title => "monday night")
     topic.replies.create!(:title => "re: monday night", :content => "football")
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
 
     topic.save!
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
   end
 
   def test_belongs_to_with_touch_option_on_touch
@@ -567,19 +574,23 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   def test_belongs_to_counter_after_update
     topic = Topic.create!(title: "37s")
     topic.replies.create!(title: "re: 37s", content: "rails")
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
 
     topic.update(title: "37signals")
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
   end
 
   def test_belongs_to_counter_when_update_columns
     topic = Topic.create!(:title => "37s")
     topic.replies.create!(:title => "re: 37s", :content => "rails")
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
 
     topic.update_columns(content: "rails is wonderful")
-    assert_equal 1, Topic.find(topic.id)[:replies_count]
+    assert_equal 0, Topic.find(topic.id)[:replies_count]
+    assert_equal 1, Topic.find(topic.id).replies_count
   end
 
   def test_assignment_before_child_saved
@@ -654,11 +665,14 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     reply = Reply.create(:title => "re: zoom", :content => "speedy quick!")
     reply.topic = topic
 
-    assert_equal 1, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 1, topic.reload.replies_count
     assert_equal 1, topic.replies.size
 
     topic[:replies_count] = 15
-    assert_equal 15, topic.replies.size
+    # TODO determine if the correct behavior is to add the contents of the counter cache table to the assigned value
+    # OR if the table should be cleared
+    assert_equal 16, topic.replies.size
   end
 
   def test_counter_cache_double_destroy
@@ -668,16 +682,19 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
       topic.replies.create(:title => "re: zoom", :content => "speedy quick!")
     end
 
-    assert_equal 5, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 5, topic.reload.replies_count
     assert_equal 5, topic.replies.size
 
     reply = topic.replies.first
 
     reply.destroy
-    assert_equal 4, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 4, topic.reload.replies_count
 
     reply.destroy
-    assert_equal 4, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 4, topic.reload.replies_count
     assert_equal 4, topic.replies.size
   end
 
@@ -688,17 +705,20 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
       topic.replies.create(:title => "re: zoom", :content => "speedy quick!")
     end
 
-    assert_equal 5, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 5, topic.reload.replies_count
     assert_equal 5, topic.replies.size
 
     reply = topic.replies.first
     reply_clone = Reply.find(reply.id)
 
     reply.destroy
-    assert_equal 4, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 4, topic.reload.replies_count
 
     reply_clone.destroy
-    assert_equal 4, topic.reload[:replies_count]
+    assert_equal 0, topic.reload[:replies_count]
+    assert_equal 4, topic.reload.replies_count
     assert_equal 4, topic.replies.size
   end
 
