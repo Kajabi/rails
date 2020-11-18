@@ -67,6 +67,7 @@ module ActiveRecord
         # If the collection is empty the target is set to an empty array and
         # the loaded flag is set to true as well.
         def count_records
+          raise "SHOULD NOT GET HERE: count_records"
           count = if reflection.has_cached_counter? &&
             reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
             owner.send(reflection.counter_cache_column.to_sym) || 0
@@ -91,6 +92,7 @@ module ActiveRecord
         end
 
         def update_counter_in_memory(difference, reflection = reflection())
+          raise "SHOULD NOT GET HERE"
           if reflection.counter_must_be_updated_by_has_many?
             counter = reflection.counter_cache_column
             return if counter.to_s == reflection.options[:counter_cache_override].to_s

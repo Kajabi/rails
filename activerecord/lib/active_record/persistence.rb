@@ -343,6 +343,7 @@ module ActiveRecord
     # This means that any other modified attributes will still be dirty.
     # Validations and callbacks are skipped. Returns +self+.
     def increment!(attribute, by = 1)
+      raise "!!!!!!!!!!SHOULD NOT BE CALLED!!!!!!!!!!!!!!"
       if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
         self.class.update_counters(id, attribute => by)
       else

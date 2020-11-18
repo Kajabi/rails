@@ -1,0 +1,159 @@
+
+module ActiveRecord::Associations::Builder
+  class Association
+
+    def self.define_accessors(model, reflection)
+      mixin = model.generated_association_methods
+      name = reflection.name
+      define_readers(mixin, name)
+      define_writers(mixin, name)
+      define_counter_cache_getter_override(model, reflection) if reflection.options[:counter_cache_override]
+    end
+
+    def self.define_counter_cache_getter_override(model, reflection)
+      cc_getter = reflection.options[:counter_cache_override].to_s
+      model.define_method cc_getter do
+        sql = "select sum(increment) as sum from #{model.table_name}_#{cc_getter}s where parent_id = :id"
+        sum = ActiveRecord::Base.connection.exec_query(ActiveRecord::Base.send(:sanitize_sql_array,[sql, id: id]))[0]["sum"].to_i
+        self.read_attribute(cc_getter).to_i + sum unless read_attribute(cc_getter).nil? && sum == 0
+      end
+    end
+  end
+end
+
+
+module ActiveRecord
+  module CounterCache
+    extend ActiveSupport::Concern
+    module ClassMethods
+      def reset_counters(id, *counters)
+        object = find(id)
+        counters.each do |counter_association|
+          has_many_association = _reflect_on_association(counter_association)
+          unless has_many_association
+            has_many = reflect_on_all_associations(:has_many)
+            has_many_association = has_many.find { |association| association.counter_cache_column && association.counter_cache_column.to_sym == counter_association.to_sym }
+            counter_association = has_many_association.plural_name if has_many_association
+          end
+          raise ArgumentError, "'#{self.name}' has no association called '#{counter_association}'" unless has_many_association
+
+          if has_many_association.is_a? ActiveRecord::Reflection::ThroughReflection
+            has_many_association = has_many_association.through_reflection
+          end
+
+          foreign_key  = has_many_association.foreign_key.to_s
+          child_class  = has_many_association.klass
+          reflection   = child_class._reflections.values.find { |e| e.belongs_to? && e.foreign_key.to_s == foreign_key && e.options[:counter_cache].present? }
+          counter_name = reflection.counter_cache_column
+
+          unscoped.where(primary_key => object.id).update_all(
+            counter_name => object.send(counter_association).count(:all)
+          )
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          Array.wrap(id).each do |idx|
+            sql = "delete from  #{counter_table_name} where parent_id=:parent_id"
+            connection.exec_query(sanitize_sql_array([sql, parent_id: idx]))
+          end
+        end
+
+        return true
+      end
+
+      def update_counters(id, counters) #TODO - add switch for using custom or default impl
+        updates = counters_with_default(counters).map do |counter_name, value|
+          operator = value < 0 ? '-' : '+'
+          quoted_column = connection.quote_column_name(counter_name)
+          "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
+        end
+
+        unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
+
+        counters_using_override(counters).map do |counter_name, value|
+          counter_table_name = "#{table_name}_#{counter_name}s"
+          operator = value < 0 ? '-' : '+'
+          Array.wrap(id).each do |idx|
+            #sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
+            sql = "insert into #{counter_table_name}(parent_id, increment) values(:idx, :increment_by)"
+            # ISSUE: This next line is a bit of a hack because of how in memory decrements work
+            value = value == 0 ? -1 : value
+            connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
+          end
+        end
+      end
+
+      private
+      def counter_overrides
+        # TODO memoize
+        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
+      end
+
+      def counters_using_override(counters)
+        counters.select { |key,_|  counter_overrides.include?(key) }
+      end
+
+      def counters_with_default(counters)
+        counters.reject { |key,_|  counter_overrides.include?(key) }
+      end
+    end
+  end
+end
+
+
+module ActiveRecord
+  module Associations
+    class HasManyAssociation < CollectionAssociation
+
+      private
+      def count_records
+        count = if reflection.has_cached_counter? &&
+          reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
+          owner.send(reflection.counter_cache_column.to_sym) || 0
+        elsif reflection.has_cached_counter?
+          owner._read_attribute reflection.counter_cache_column
+        else
+          scope.count
+        end
+
+        # If there's nothing in the database and @target has no new records
+        # we are certain the current target is an empty array. This is a
+        # documented side-effect of the method that may avoid an extra SELECT.
+        @target ||= [] and loaded! if count == 0
+
+        [association_scope.limit_value, count].compact.min
+      end
+
+      def update_counter_in_memory(difference, reflection = reflection())
+        if reflection.counter_must_be_updated_by_has_many?
+          counter = reflection.counter_cache_column
+          return if counter.to_s == reflection.options[:counter_cache_override].to_s
+          owner.increment(counter, difference)
+          owner.send(:clear_attribute_change, counter) # eww
+        end
+      end
+    end
+  end
+end
+
+module ActiveRecord::Associations::Builder # :nodoc:
+  class HasMany < CollectionAssociation
+    def self.valid_options(options)
+      super + [:primary_key, :dependent, :as, :through, :source, :source_type, :inverse_of, :counter_cache, :join_table, :foreign_type, :index_errors, :counter_cache_override]
+    end
+  end
+end
+
+module ActiveRecord
+  module Persistence
+    def increment!(attribute, by = 1)
+      if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
+        self.class.update_counters(id, attribute => by)
+      else
+        increment(attribute, by)
+        change = public_send(attribute) - (attribute_was(attribute.to_s) || 0)
+        self.class.update_counters(id, attribute => change)
+        clear_attribute_change(attribute) # eww
+      end
+      self
+    end
+  end
+end

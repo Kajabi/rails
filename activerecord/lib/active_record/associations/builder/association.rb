@@ -103,6 +103,7 @@ module ActiveRecord::Associations::Builder # :nodoc:
       name = reflection.name
       define_readers(mixin, name)
       define_writers(mixin, name)
+      raise "SHOULD NOT GET HERE"
       define_counter_cache_getter_override(model, reflection) if reflection.options[:counter_cache_override]
     end
 
