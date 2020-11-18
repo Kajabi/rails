@@ -1,11 +1,13 @@
 require File.expand_path('../../../../load_paths', __FILE__)
 
 require 'config'
+require 'byebug'
 
 require 'active_support/testing/autorun'
 require 'stringio'
 
 require 'active_record'
+require 'counter_cache_override'
 require 'cases/test_case'
 require 'active_support/dependencies'
 require 'active_support/logger'
@@ -13,6 +15,7 @@ require 'active_support/core_ext/string/strip'
 
 require 'support/config'
 require 'support/connection'
+# byebug
 
 # TODO: Move all these random hacks into the ARTest namespace and into the support/ dir
 

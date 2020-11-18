@@ -1,5 +1,4 @@
-# encoding: utf-8
-
+# coding: utf-8
 ActiveRecord::Schema.define do
   def except(adapter_names_to_exclude)
     unless [adapter_names_to_exclude].flatten.include?(adapter_name)
@@ -52,6 +51,11 @@ ActiveRecord::Schema.define do
 
   create_table :aircraft, force: true do |t|
     t.string :name
+  end
+
+  create_table :aircraft_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
   end
 
   create_table :articles, force: true do |t|
@@ -141,6 +145,22 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :cars_engines_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :cars_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  # create_table :cars_lock_versions, force: true do |t|
+  #   t.integer :parent_id
+  #   t.integer :increment
+  # end
+
+
   create_table :carriers, force: true
 
   create_table :categories, force: true do |t|
@@ -160,6 +180,11 @@ ActiveRecord::Schema.define do
     t.column :post_id, :integer
     t.column :author_id, :integer
     t.column :special, :boolean
+  end
+
+  create_table :categories_categorizations_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
   end
 
   create_table :citations, force: true do |t|
@@ -280,6 +305,21 @@ ActiveRecord::Schema.define do
     t.integer :trained_dogs_count, default: 0
     t.integer :bred_dogs_count, default: 0
     t.integer :dogs_count, default: 0
+  end
+
+  create_table :dog_lovers_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :dog_lovers_bred_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :dog_lovers_trained_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
   end
 
   create_table :dogs, force: true do |t|
@@ -559,6 +599,11 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :people_friends_too_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
   create_table :peoples_treasures, id: false, force: true do |t|
     t.column :rich_person_id, :integer
     t.column :treasure_id, :integer
@@ -719,6 +764,11 @@ ActiveRecord::Schema.define do
   end
   add_index :subscribers, :nick, unique: true
 
+  create_table :subscribers_books_counts, force: true do |t|
+    t.string :parent_id
+    t.integer :increment
+  end
+
   create_table :subscriptions, force: true do |t|
     t.string :subscriber_id
     t.integer :book_id
@@ -770,6 +820,37 @@ ActiveRecord::Schema.define do
     t.string   :type
     t.string   :group
     t.timestamps null: true
+  end
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+  create_table :topics_unique_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
   end
 
   create_table :toys, primary_key: :toy_id, force: true do |t|

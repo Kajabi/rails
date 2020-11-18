@@ -97,8 +97,8 @@ end
 platforms :ruby do
   gem 'nokogiri', RUBY_VERSION < '2.1' ? '~> 1.6.0' : '>= 1.7'
 
-  # Needed for compiling the ActionDispatch::Journey parser
-  gem 'racc', '>=1.4.6', require: false
+  # Needed for compiling the ActionDispatch::Journey parser.
+  gem 'racc', '>=1.4.16', require: false
 
   # AR
   gem 'sqlite3', '~> 1.3.6'

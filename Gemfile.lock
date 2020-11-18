@@ -159,11 +159,17 @@ GEM
       mini_portile2 (~> 2.3.0)
     pg (0.18.4)
     psych (2.2.4)
-    que (0.14.3)
-    queue_classic (3.1.0)
-      pg (>= 0.17, < 0.19)
-    racc (1.4.14)
-    rack (1.6.9)
+    public_suffix (3.0.1)
+    puma (3.11.0)
+    qu (0.2.0)
+      multi_json
+    qu-redis (0.2.0)
+      qu (= 0.2.0)
+      redis-namespace
+      simple_uuid
+    que (0.14.1)
+    racc (1.5.1)
+    rack (2.0.4)
     rack-cache (1.7.1)
       rack (>= 0.4)
     rack-protection (1.5.5)
@@ -280,8 +286,13 @@ DEPENDENCIES
   qu-rails!
   qu-redis
   que
+<<<<<<< HEAD
   queue_classic (>= 3.1.0)
   racc (>= 1.4.6)
+=======
+  queue_classic!
+  racc (>= 1.4.16)
+>>>>>>> 5ff0f3898f (Patch for counter cache override.)
   rack-cache (~> 1.2)
   rails!
   rake (>= 10.3, < 12.3)

@@ -8,8 +8,8 @@ class Car < ActiveRecord::Base
   has_one :bulb
 
   has_many :tyres
-  has_many :engines, :dependent => :destroy, inverse_of: :my_car
-  has_many :wheels, :as => :wheelable, :dependent => :destroy
+  has_many :engines, :dependent => :destroy, inverse_of: :my_car, counter_cache_override: :engines_count
+  has_many :wheels, :as => :wheelable, :dependent => :destroy, counter_cache_override: :wheels_count
 
   scope :incl_tyres, -> { includes(:tyres) }
   scope :incl_engines, -> { includes(:engines) }

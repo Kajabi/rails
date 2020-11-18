@@ -32,10 +32,10 @@ class Topic < ActiveRecord::Base
     end
   end
 
-  has_many :replies, :dependent => :destroy, :foreign_key => "parent_id"
+  has_many :replies, dependent: :destroy, foreign_key: "parent_id", autosave: true, counter_cache_override: :replies_count
   has_many :approved_replies, -> { approved }, class_name: 'Reply', foreign_key: "parent_id", counter_cache: 'replies_count'
 
-  has_many :unique_replies, :dependent => :destroy, :foreign_key => "parent_id"
+  has_many :unique_replies, :dependent => :destroy, :foreign_key => "parent_id", counter_cache_override: :unique_replies_count
   has_many :silly_unique_replies, :dependent => :destroy, :foreign_key => "parent_id"
 
   serialize :content
