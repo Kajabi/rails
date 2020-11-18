@@ -1,16 +1,17 @@
 
-module ActiveRecord::Associations::Builder
-  class Association
+if ActiveRecord.gem_version != Gem::Version.new("5.0.7.2")
+  ActiveSupport::Deprecation.warn("Counter Cache Override is only tested with rails 5.0.7.2")
+end
 
-    def self.define_accessors(model, reflection)
-      mixin = model.generated_association_methods
-      name = reflection.name
-      define_readers(mixin, name)
-      define_writers(mixin, name)
-      define_counter_cache_getter_override(model, reflection) if reflection.options[:counter_cache_override]
+
+module CounterCacheOverride
+  module GetterAccessors
+    def define_accessors(model, reflection)
+      super
+      define_counter_cache_getter_override(model, reflection)
     end
 
-    def self.define_counter_cache_getter_override(model, reflection)
+    def define_counter_cache_getter_override(model, reflection)
       cc_getter = reflection.options[:counter_cache_override].to_s
       model.define_method cc_getter do
         sql = "select sum(increment) as sum from #{model.table_name}_#{cc_getter}s where parent_id = :id"
@@ -20,9 +21,9 @@ module ActiveRecord::Associations::Builder
     end
   end
 end
+ActiveRecord::Associations::Builder::Association.singleton_class.prepend CounterCacheOverride::GetterAccessors
 
-
-module ActiveRecord
+module CounterCacheOverride
   module CounterCache
     extend ActiveSupport::Concern
     module ClassMethods
@@ -55,18 +56,11 @@ module ActiveRecord
             connection.exec_query(sanitize_sql_array([sql, parent_id: idx]))
           end
         end
-
         return true
       end
 
-      def update_counters(id, counters) #TODO - add switch for using custom or default impl
-        updates = counters_with_default(counters).map do |counter_name, value|
-          operator = value < 0 ? '-' : '+'
-          quoted_column = connection.quote_column_name(counter_name)
-          "#{quoted_column} = COALESCE(#{quoted_column}, 0) #{operator} #{value.abs}"
-        end
-
-        unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
+      def update_counters(id, counters)
+        super(id, counters_with_default(counters))
 
         counters_using_override(counters).map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
@@ -97,50 +91,50 @@ module ActiveRecord
     end
   end
 end
+ActiveRecord::Base.include CounterCacheOverride::CounterCache
 
+module CounterCacheOverride
+  module HasManyCounts
 
-module ActiveRecord
-  module Associations
-    class HasManyAssociation < CollectionAssociation
-
-      private
-      def count_records
-        count = if reflection.has_cached_counter? &&
-          reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
-          owner.send(reflection.counter_cache_column.to_sym) || 0
-        elsif reflection.has_cached_counter?
-          owner._read_attribute reflection.counter_cache_column
-        else
-          scope.count
-        end
-
-        # If there's nothing in the database and @target has no new records
-        # we are certain the current target is an empty array. This is a
-        # documented side-effect of the method that may avoid an extra SELECT.
-        @target ||= [] and loaded! if count == 0
-
-        [association_scope.limit_value, count].compact.min
+    private
+    def count_records
+      count = if reflection.has_cached_counter? &&
+        reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
+        owner.send(reflection.counter_cache_column.to_sym) || 0
+      elsif reflection.has_cached_counter?
+        owner._read_attribute reflection.counter_cache_column
+      else
+        scope.count
       end
 
-      def update_counter_in_memory(difference, reflection = reflection())
-        if reflection.counter_must_be_updated_by_has_many?
-          counter = reflection.counter_cache_column
-          return if counter.to_s == reflection.options[:counter_cache_override].to_s
-          owner.increment(counter, difference)
-          owner.send(:clear_attribute_change, counter) # eww
-        end
+      # If there's nothing in the database and @target has no new records
+      # we are certain the current target is an empty array. This is a
+      # documented side-effect of the method that may avoid an extra SELECT.
+      @target ||= [] and loaded! if count == 0
+
+      [association_scope.limit_value, count].compact.min
+    end
+
+    def update_counter_in_memory(difference, reflection = reflection())
+      if reflection.counter_must_be_updated_by_has_many?
+        counter = reflection.counter_cache_column
+        return if counter.to_s == reflection.options[:counter_cache_override].to_s
+        owner.increment(counter, difference)
+        owner.send(:clear_attribute_change, counter) # eww
       end
     end
   end
 end
+ActiveRecord::Associations::HasManyAssociation.prepend CounterCacheOverride::HasManyCounts
 
-module ActiveRecord::Associations::Builder # :nodoc:
-  class HasMany < CollectionAssociation
-    def self.valid_options(options)
-      super + [:primary_key, :dependent, :as, :through, :source, :source_type, :inverse_of, :counter_cache, :join_table, :foreign_type, :index_errors, :counter_cache_override]
+module CounterCacheOverride
+  module ValidOptions
+    def valid_options(options)
+      super + [:counter_cache_override]
     end
   end
 end
+ActiveRecord::Associations::Builder::HasMany.singleton_class.prepend CounterCacheOverride::ValidOptions
 
 module ActiveRecord
   module Persistence
@@ -157,3 +151,4 @@ module ActiveRecord
     end
   end
 end
+

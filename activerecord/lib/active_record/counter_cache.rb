@@ -40,12 +40,6 @@ module ActiveRecord
           unscoped.where(primary_key => object.id).update_all(
             counter_name => object.send(counter_association).count(:all)
           )
-          raise "SHOULD NOT BE CALLED"
-          counter_table_name = "#{table_name}_#{counter_name}s"
-          Array.wrap(id).each do |idx|
-            sql = "delete from  #{counter_table_name} where parent_id=:parent_id"
-            connection.exec_query(sanitize_sql_array([sql, parent_id: idx]))
-          end
         end
 
         return true
@@ -81,7 +75,6 @@ module ActiveRecord
       #   #    SET comment_count = COALESCE(comment_count, 0) + 1
       #   #  WHERE id IN (10, 15)
       def update_counters(id, counters) #TODO - add switch for using custom or default impl
-        raise "!!!!!!!!!!!!!!SHOULD NOT BE CALLED"
         updates = counters_with_default(counters).map do |counter_name, value|
           operator = value < 0 ? '-' : '+'
           quoted_column = connection.quote_column_name(counter_name)
@@ -90,17 +83,6 @@ module ActiveRecord
 
         unscoped.where(primary_key => id).update_all updates.join(', ') if updates.present?
 
-        counters_using_override(counters).map do |counter_name, value|
-          counter_table_name = "#{table_name}_#{counter_name}s"
-          operator = value < 0 ? '-' : '+'
-          Array.wrap(id).each do |idx|
-            #sql = "insert into :counter_table_name(parent_id, increment) values(:idx, :increment_by)"
-            sql = "insert into #{counter_table_name}(parent_id, increment) values(:idx, :increment_by)"
-            # ISSUE: This next line is a bit of a hack because of how in memory decrements work
-            value = value == 0 ? -1 : value
-            connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
-          end
-        end
       end
 
 
