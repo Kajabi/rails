@@ -3,13 +3,9 @@ GIT
   revision: d098e2657c92e89a6413bebd9c033930759c061f
   branch: master
   specs:
-    qu (0.2.0)
     qu-rails (0.2.0)
       qu (= 0.2.0)
       railties (>= 3.2, < 5)
-    qu-redis (0.2.0)
-      qu (= 0.2.0)
-      redis-namespace
 
 PATH
   remote: .
@@ -159,8 +155,6 @@ GEM
       mini_portile2 (~> 2.3.0)
     pg (0.18.4)
     psych (2.2.4)
-    public_suffix (3.0.1)
-    puma (3.11.0)
     qu (0.2.0)
       multi_json
     qu-redis (0.2.0)
@@ -168,8 +162,10 @@ GEM
       redis-namespace
       simple_uuid
     que (0.14.1)
+    queue_classic (3.1.0)
+      pg (>= 0.17, < 0.19)
     racc (1.5.1)
-    rack (2.0.4)
+    rack (1.6.11)
     rack-cache (1.7.1)
       rack (>= 0.4)
     rack-protection (1.5.5)
@@ -216,6 +212,7 @@ GEM
       rack-protection (>= 1.5.0)
       redis (>= 3.3.5, < 5)
     sigdump (0.2.4)
+    simple_uuid (0.4.0)
     sinatra (1.4.8)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -286,13 +283,9 @@ DEPENDENCIES
   qu-rails!
   qu-redis
   que
-<<<<<<< HEAD
   queue_classic (>= 3.1.0)
-  racc (>= 1.4.6)
-=======
-  queue_classic!
   racc (>= 1.4.16)
->>>>>>> 5ff0f3898f (Patch for counter cache override.)
+  rack (= 1.6.11)
   rack-cache (~> 1.2)
   rails!
   rake (>= 10.3, < 12.3)

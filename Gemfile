@@ -17,6 +17,7 @@ gem 'rake', '>= 10.3', '< 12.3'
 # ensure correct loading order
 gem 'mocha', '~> 0.14', require: false
 
+gem 'rack', "1.6.11"
 gem 'rack-cache', '~> 1.2'
 gem 'jquery-rails', '~> 4.0'
 gem 'coffee-rails', '~> 4.1.0'

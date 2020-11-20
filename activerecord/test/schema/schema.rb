@@ -825,32 +825,19 @@ ActiveRecord::Schema.define do
   create_table :topics_replies_counts, force: true do |t|
     t.integer :parent_id
     t.integer :increment
-    if subsecond_precision_supported?
-      t.timestamps null: true, precision: 6
-    else
-      t.timestamps null: true
-    end
   end
 
   create_table :topics_unique_replies_counts, force: true do |t|
     t.integer :parent_id
     t.integer :increment
-    if subsecond_precision_supported?
-      t.timestamps null: true, precision: 6
-    else
-      t.timestamps null: true
-    end
+    t.timestamps null: true
   end
 
 
   create_table :topics_replies_counts, force: true do |t|
     t.integer :parent_id
     t.integer :increment
-    if subsecond_precision_supported?
-      t.timestamps null: true, precision: 6
-    else
-      t.timestamps null: true
-    end
+    t.timestamps null: true
   end
 
   create_table :toys, primary_key: :toy_id, force: true do |t|
