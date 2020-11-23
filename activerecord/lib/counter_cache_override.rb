@@ -97,11 +97,12 @@ module CounterCacheOverride
 
     private
     def count_records
-      count = if reflection.has_cached_counter? &&
-        reflection.options[:counter_cache_override].to_s == reflection.counter_cache_column.to_s
-        owner.send(reflection.counter_cache_column.to_sym) || 0
-      elsif reflection.has_cached_counter?
-        owner._read_attribute reflection.counter_cache_column
+     # byebug
+      count = if has_cached_counter? &&
+        reflection.options[:counter_cache_override].to_s == cached_counter_attribute_name.to_s
+        owner.send(cached_counter_attribute_name.to_sym) || 0
+      elsif has_cached_counter?
+        owner._read_attribute cached_counter_attribute_name
       else
         scope.count
       end
@@ -113,13 +114,12 @@ module CounterCacheOverride
 
       [association_scope.limit_value, count].compact.min
     end
-
     def update_counter_in_memory(difference, reflection = reflection())
-      if reflection.counter_must_be_updated_by_has_many?
-        counter = reflection.counter_cache_column
+      if counter_must_be_updated_by_has_many?(reflection)
+        counter = cached_counter_attribute_name(reflection)
         return if counter.to_s == reflection.options[:counter_cache_override].to_s
-        owner.increment(counter, difference)
-        owner.send(:clear_attribute_change, counter) # eww
+        owner[counter] += difference
+        owner.send(:clear_attribute_changes, counter) # eww
       end
     end
   end
@@ -127,9 +127,17 @@ end
 ActiveRecord::Associations::HasManyAssociation.prepend CounterCacheOverride::HasManyCounts
 
 module CounterCacheOverride
+  module CounterCacheAvailableInMemory
+    def counter_cache_available_in_memory?(counter_cache_name)
+      counter_cache_overrides = target._reflections.values.map { |opt| opt.options.dig(:counter_cache_override) }.compact.map(&:to_s)
+      target.respond_to?(counter_cache_name) && !counter_cache_overrides.include?(counter_cache_name)
+    end
+  end
+end
+ActiveRecord::Associations::BelongsToAssociation.prepend CounterCacheOverride::CounterCacheAvailableInMemory
+module CounterCacheOverride
   module ValidOptions
     def valid_options
-      puts "***********in valid options prepend***********"
       super + [:counter_cache_override]
     end
   end

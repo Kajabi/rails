@@ -93,6 +93,7 @@ group :test do
   end
 
   gem 'benchmark-ips'
+  gem 'byebug'
 end
 
 platforms :ruby do
