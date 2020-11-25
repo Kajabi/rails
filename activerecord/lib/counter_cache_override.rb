@@ -151,12 +151,8 @@ module CounterCacheOverride
       if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
         self.class.update_counters(id, attribute => by)
       else
-        increment(attribute, by)
-        change = public_send(attribute) - (attribute_was(attribute.to_s) || 0)
-        self.class.update_counters(id, attribute => change)
-        clear_attribute_change(attribute) # eww
+        increment(attribute, by).update_attribute(attribute, self[attribute])
       end
-      self
     end
   end
 end
