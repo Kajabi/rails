@@ -144,7 +144,8 @@ module CounterCacheOverride
 end
 ActiveRecord::Associations::Builder::HasMany.prepend CounterCacheOverride::ValidOptions
 
-module ActiveRecord
+
+module CounterCacheOverride
   module Persistence
     def increment!(attribute, by = 1)
       if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
@@ -159,4 +160,4 @@ module ActiveRecord
     end
   end
 end
-
+ActiveRecord::Persistence.prepend CounterCacheOverride::Persistence
