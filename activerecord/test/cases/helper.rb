@@ -7,6 +7,7 @@ require 'active_support/testing/autorun'
 require 'stringio'
 
 require 'active_record'
+require 'backport_pg_10_support_to_rails_4'
 require 'counter_cache_override'
 require 'cases/test_case'
 require 'active_support/dependencies'
