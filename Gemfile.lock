@@ -125,7 +125,7 @@ GEM
     activerecord-jdbcsqlite3-adapter (60.2-java)
       activerecord-jdbc-adapter (= 60.2)
       jdbc-sqlite3 (~> 3.8, < 3.30)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     amq-protocol (2.3.2)
     ansi (1.5.0)
@@ -182,6 +182,8 @@ GEM
       faraday
       selenium-webdriver
     bootsnap (1.5.0)
+      msgpack (~> 1.0)
+    bootsnap (1.5.0-java)
       msgpack (~> 1.0)
     builder (3.2.4)
     bunny (2.17.0)
