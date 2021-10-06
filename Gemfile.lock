@@ -183,6 +183,8 @@ GEM
       selenium-webdriver
     bootsnap (1.5.0)
       msgpack (~> 1.0)
+    bootsnap (1.5.0-java)
+      msgpack (~> 1.0)
     builder (3.2.4)
     bunny (2.17.0)
       amq-protocol (~> 2.3, >= 2.3.1)
@@ -464,7 +466,7 @@ GEM
     sequel (5.38.0)
     serverengine (2.0.7)
       sigdump (~> 0.2.2)
-    sidekiq (6.1.2)
+    sidekiq (6.2.2)
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
