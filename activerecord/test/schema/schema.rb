@@ -34,6 +34,11 @@ ActiveRecord::Schema.define do
     t.datetime :wheels_owned_at
   end
 
+  create_table :aircraft_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
   create_table :articles, force: true do |t|
   end
 
@@ -127,6 +132,22 @@ ActiveRecord::Schema.define do
     t.column :lock_version, :integer, null: false, default: 0
     t.timestamps null: false
   end
+
+  create_table :cars_engines_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :cars_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  # create_table :cars_lock_versions, force: true do |t|
+  #   t.integer :parent_id
+  #   t.integer :increment
+  # end
+
 
   create_table :old_cars, id: :integer, force: true do |t|
   end
@@ -289,6 +310,21 @@ ActiveRecord::Schema.define do
     t.integer :trained_dogs_count, default: 0
     t.integer :bred_dogs_count, default: 0
     t.integer :dogs_count, default: 0
+  end
+
+  create_table :dog_lovers_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :dog_lovers_bred_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
+  create_table :dog_lovers_trained_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
   end
 
   create_table :dogs, force: true do |t|
@@ -636,6 +672,11 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+    create_table :people_friends_too_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+  end
+
   create_table :peoples_treasures, id: false, force: true do |t|
     t.column :rich_person_id, :integer
     t.column :treasure_id, :integer
@@ -838,6 +879,11 @@ ActiveRecord::Schema.define do
     t.integer :book_id
   end
 
+    create_table :subscribers_books_counts, force: true do |t|
+    t.string :parent_id
+    t.integer :increment
+  end
+
   create_table :tags, force: true do |t|
     t.column :name, :string
     t.column :taggings_count, :integer, default: 0
@@ -883,6 +929,37 @@ ActiveRecord::Schema.define do
     t.string   :parent_title
     t.string   :type
     t.string   :group
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+    create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+  create_table :topics_unique_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment
     if subsecond_precision_supported?
       t.timestamps null: true, precision: 6
     else
