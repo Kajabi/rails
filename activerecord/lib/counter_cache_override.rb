@@ -1,7 +1,7 @@
 
-# if !ActiveRecord.gem_version.to_s.start_with?("5.0")
-#  ActiveSupport::Deprecation.warn("Counter Cache Override is only tested with rails 5.0")
-# end
+if !ActiveRecord.gem_version.to_s.start_with?("5.1")
+  ActiveSupport::Deprecation.warn("Counter Cache Override is only tested with rails 5.1")
+end
 
 module CounterCacheOverride
   module GetterAccessors
@@ -66,7 +66,7 @@ module CounterCacheOverride
       end
 
       def update_counters(id, counters)
-        super(id, counters_with_default(counters)) unless counters_with_default(counters).empty?
+        super(id, counters_with_default(counters)) unless counters_with_default(counters_without_touch(counters)).empty?
 
         counters_using_override(counters).map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
@@ -81,6 +81,13 @@ module CounterCacheOverride
       end
 
       private
+
+      def counters_without_touch(counters)
+        hsh = counters.clone
+        hsh.delete(:touch)
+        hsh
+      end
+
       def counter_overrides
         # TODO memoize
         reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
