@@ -168,4 +168,4 @@ module CounterCacheOverride
     end
   end
 end
-ActiveRecord::Persistence.include CounterCacheOverride::Persistence
+ActiveRecord::Base.include CounterCacheOverride::Persistence

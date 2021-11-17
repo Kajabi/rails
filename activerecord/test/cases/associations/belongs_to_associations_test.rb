@@ -542,7 +542,6 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     debate2.touch(time: time)
 
     reply.topic_with_primary_key = debate2
-
     assert_operator debate.reload.updated_at, :>, time
     assert_operator debate2.reload.updated_at, :>, time
   end
@@ -556,12 +555,13 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     reply = Reply.create!(title: "blah!", content: "world around!", topic_with_primary_key: topic)
 
     assert_equal 1, topic.replies_count
-    assert_equal 1, topic.after_touch_called
+    assert_equal 0, topic.after_touch_called, "After touch is not called in this case because we are reading from the counter cache override table."
 
     reply.destroy!
 
     assert_equal 0, topic.replies_count
-    assert_equal 2, topic.after_touch_called
+    assert_equal 0, topic.after_touch_called, "After touch is not called in this case because we are reading from the counter cache override table."
+
   end
 
   def test_belongs_to_with_touch_option_on_touch
