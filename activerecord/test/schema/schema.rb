@@ -36,7 +36,7 @@ ActiveRecord::Schema.define do
 
   create_table :aircraft_wheels_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :articles, force: true do |t|
@@ -135,17 +135,17 @@ ActiveRecord::Schema.define do
 
   create_table :cars_engines_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :cars_wheels_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   # create_table :cars_lock_versions, force: true do |t|
   #   t.integer :parent_id
-  #   t.integer :increment
+  #   t.integer :increment_by
   # end
 
 
@@ -158,6 +158,11 @@ ActiveRecord::Schema.define do
     t.string :name, null: false
     t.string :type
     t.integer :categorizations_count
+  end
+
+  create_table :categories_categorizations_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :categories_posts, force: true, id: false do |t|
@@ -314,17 +319,17 @@ ActiveRecord::Schema.define do
 
   create_table :dog_lovers_dogs_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :dog_lovers_bred_dogs_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :dog_lovers_trained_dogs_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :dogs, force: true do |t|
@@ -674,7 +679,7 @@ ActiveRecord::Schema.define do
 
     create_table :people_friends_too_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :peoples_treasures, id: false, force: true do |t|
@@ -881,7 +886,7 @@ ActiveRecord::Schema.define do
 
     create_table :subscribers_books_counts, force: true do |t|
     t.string :parent_id
-    t.integer :increment
+    t.integer :increment_by
   end
 
   create_table :tags, force: true do |t|
@@ -938,7 +943,7 @@ ActiveRecord::Schema.define do
 
     create_table :topics_replies_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
     if subsecond_precision_supported?
       t.timestamps null: true, precision: 6
     else
@@ -948,7 +953,7 @@ ActiveRecord::Schema.define do
 
   create_table :topics_unique_replies_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
     if subsecond_precision_supported?
       t.timestamps null: true, precision: 6
     else
@@ -959,7 +964,7 @@ ActiveRecord::Schema.define do
 
   create_table :topics_replies_counts, force: true do |t|
     t.integer :parent_id
-    t.integer :increment
+    t.integer :increment_by
     if subsecond_precision_supported?
       t.timestamps null: true, precision: 6
     else

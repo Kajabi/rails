@@ -29,6 +29,11 @@ class CounterCacheTest < ActiveRecord::TestCase
 
   setup do
     @topic = Topic.find(1)
+    @c = Car.find(1)
+   end
+
+  test "hello world" do
+    assert_equal 0, @c.engines_count
   end
 
   test "increment counter" do
@@ -182,11 +187,13 @@ class CounterCacheTest < ActiveRecord::TestCase
     end
   end
 
+  class CarsEnginesCount < ActiveRecord::Base
+  end
+
   test "counters are updated both in memory and in the database on create" do
     car = Car.new(engines_count: 0)
     car.engines = [Engine.new, Engine.new]
     car.save!
-
     assert_equal 2, car.engines_count
     assert_equal 2, car.reload.engines_count
   end
