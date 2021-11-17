@@ -542,8 +542,9 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     debate2.touch(time: time)
 
     reply.topic_with_primary_key = debate2
-    assert_operator debate.reload.updated_at, :>, time
-    assert_operator debate2.reload.updated_at, :>, time
+    # touch doesn't affect because it is not updating the counts on the object only the cache override tables.
+    assert_in_delta debate.reload.updated_at, time, 1
+    assert_in_delta debate2.reload.updated_at, time, 1
   end
 
   def test_belongs_to_counter_after_touch
