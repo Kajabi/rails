@@ -523,6 +523,8 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   end
 
   def test_belongs_to_touch_with_reassigning
+    # ISSUE this test and test case is new for Rails 5.1 and includes a primary key that is not an integer
+    # This passes for sqlit3 but fails in our implementation for the counter_cache_override
     debate  = Topic.create!(title: "debate")
     debate2 = Topic.create!(title: "debate2")
     reply   = Reply.create!(title: "blah!", content: "world around!", parent_title: "debate2")
