@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require "config"
+require "byebug"
 
 require "stringio"
 
 require "active_record"
-require 'counter_cache_override'
+
+require "counter_cache_override"
 require "cases/test_case"
 require "active_support/dependencies"
 require "active_support/logger"

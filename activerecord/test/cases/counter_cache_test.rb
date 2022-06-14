@@ -31,6 +31,11 @@ class CounterCacheTest < ActiveRecord::TestCase
 
   setup do
     @topic = Topic.find(1)
+    @c = Car.find(1)
+  end
+
+  test "hello world" do
+    assert_equal 0, @c.engines_count
   end
 
   test "increment counter" do

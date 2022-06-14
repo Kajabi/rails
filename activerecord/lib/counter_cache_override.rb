@@ -1,3 +1,4 @@
+
 # frozen_string_literal: true
 
 # Instead of updating the counter cache on the parent row, this change creates a new row in a
@@ -86,6 +87,7 @@ module CounterCacheOverride
             options = names.extract_options!
             touch_updates = touch_attributes_with_time(*names, **options)
             updates.merge!(touch_updates)
+
           end
 
           unscoped.where(primary_key => object.id).update_all(updates)

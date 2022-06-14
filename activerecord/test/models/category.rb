@@ -23,7 +23,7 @@ class Category < ActiveRecord::Base
     "a category..."
   end
 
-  has_many :categorizations
+  has_many :categorizations, counter_cache_override: :categorizations_count
   has_many :special_categorizations
   has_many :post_comments, through: :posts, source: :comments
   has_many :ordered_post_comments, -> { order(id: :desc) }, through: :posts, source: :comments

@@ -461,7 +461,7 @@ class OptimisticLockingTest < ActiveRecord::TestCase
     end
 
     assert_equal 1, car.reload.wheels_count
-    assert_equal 1, car.lock_version
+    assert_equal 0, car.lock_version, "Table should not have lock version change because we are inserting into separate table"
     assert_operator previously_updated_at, :<, car.updated_at
     assert_operator previously_wheels_owned_at, :<, car.wheels_owned_at
 
@@ -472,7 +472,7 @@ class OptimisticLockingTest < ActiveRecord::TestCase
     end
 
     assert_equal 1, car.reload.wheels_count
-    assert_equal 2, car.lock_version
+    assert_equal 1, car.lock_version
     assert_operator previously_updated_at, :<, car.updated_at
     assert_operator previously_wheels_owned_at, :<, car.wheels_owned_at
 
@@ -483,7 +483,7 @@ class OptimisticLockingTest < ActiveRecord::TestCase
     end
 
     assert_equal 0, car.reload.wheels_count
-    assert_equal 3, car.lock_version
+    assert_equal 1, car.lock_version
     assert_operator previously_updated_at, :<, car.updated_at
     assert_operator previously_wheels_owned_at, :<, car.wheels_owned_at
 
