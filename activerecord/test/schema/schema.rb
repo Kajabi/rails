@@ -36,6 +36,11 @@ ActiveRecord::Schema.define do
     t.datetime :wheels_owned_at
   end
 
+  create_table :aircraft_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :articles, force: true do |t|
   end
 
@@ -133,6 +138,16 @@ ActiveRecord::Schema.define do
   create_table :old_cars, id: :integer, force: true do |t|
   end
 
+  create_table :cars_engines_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :cars_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :carriers, force: true
 
   create_table :categories, force: true do |t|
@@ -152,6 +167,11 @@ ActiveRecord::Schema.define do
     t.column :post_id, :integer
     t.column :author_id, :integer
     t.column :special, :boolean
+  end
+
+  create_table :categories_categorizations_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :citations, force: true do |t|
@@ -304,6 +324,21 @@ ActiveRecord::Schema.define do
     t.integer :breeder_id
     t.integer :dog_lover_id
     t.string  :alias
+  end
+
+  create_table :dog_lovers_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :dog_lovers_bred_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :dog_lovers_trained_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :doubloons, force: true do |t|
@@ -671,6 +706,11 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :people_friends_too_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :peoples_treasures, id: false, force: true do |t|
     t.column :rich_person_id, :integer
     t.column :treasure_id, :integer
@@ -878,6 +918,11 @@ ActiveRecord::Schema.define do
     t.index :nick, unique: true
   end
 
+  create_table :subscribers_books_counts, force: true do |t|
+    t.string :parent_id
+    t.integer :increment_by
+  end
+
   create_table :subscriptions, force: true do |t|
     t.string :subscriber_id
     t.integer :book_id
@@ -929,6 +974,37 @@ ActiveRecord::Schema.define do
     t.string   :parent_title
     t.string   :type
     t.string   :group
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+  create_table :topics_unique_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+    if subsecond_precision_supported?
+      t.timestamps null: true, precision: 6
+    else
+      t.timestamps null: true
+    end
+  end
+
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
     if subsecond_precision_supported?
       t.timestamps null: true, precision: 6
     else
