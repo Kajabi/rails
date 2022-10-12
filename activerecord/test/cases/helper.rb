@@ -5,6 +5,7 @@ require "config"
 require "stringio"
 
 require "active_record"
+require 'counter_cache_override'
 require "cases/test_case"
 require "active_support/dependencies"
 require "active_support/logger"
