@@ -80,11 +80,6 @@ module CounterCacheOverride
 
           updates = { counter_name => object.send(counter_association).count(:all) }
 
-        #   if touch
-        #     names = touch if touch != true
-        #     updates.merge!(touch_attributes_with_time(*names))
-        #   end
-
           if touch
             names = touch if touch != true
             names = Array.wrap(names)
@@ -104,11 +99,10 @@ module CounterCacheOverride
       end
 
       def update_counters(id, counters)
+
         super(id, counters_with_default(counters)) unless counters_with_default(counters_without_touch(counters)).empty?
 
-        touch = counters.delete(:touch)
-
-        counters_using_override(counters).map do |counter_name, value|
+        counters_using_override(counters.except(:touch)).map do |counter_name, value|
           counter_table_name = "#{table_name}_#{counter_name}s"
           operator = value < 0 ? '-' : '+'
           Array.wrap(id).each do |idx|
@@ -117,21 +111,6 @@ module CounterCacheOverride
             value = value == 0 ? -1 : value
             connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
           end
-        end
-
-
-        if touch
-          updates = []
-          names = touch if touch != true
-          touch_updates = touch_attributes_with_time(*names)
-          updates << sanitize_sql_for_assignment(touch_updates) unless touch_updates.empty?
-
-          relation = if id.is_a?(ActiveRecord::Relation) && self == id.klass
-            id
-          else
-            unscoped.where!(primary_key => id)
-          end
-          relation.update_all updates.join(", ")
         end
       end
 
@@ -216,11 +195,11 @@ module CounterCacheOverride
       else
         increment(attribute, by)
         change = public_send(attribute) - (attribute_in_database(attribute.to_s) || 0)
-        self.class.update_counters(id, attribute => change, :touch => touch)
+        self.class.update_counters(id, attribute => change, touch: touch)
         clear_attribute_change(attribute) # eww
       end
       self
     end
   end
 end
-ActiveRecord::Base.include CounterCacheOverride::Persistence
+ActiveRecord::Persistence.prepend CounterCacheOverride::Persistence
