@@ -1304,7 +1304,20 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     reply1 = Reply.create!(title: "re: zoom", content: "speedy quick!")
     reply2 = Reply.create!(title: "re: zoom 2", content: "OMG lol!")
 
-    assert_queries(4) do
+    # counter cache override adds more queries
+    #     Failure:
+    # HasManyAssociationsTest#test_counter_cache_updates_in_memory_after_update_with_inverse_of_disabled [/usr/src/rails/activerecord/test/cases/associations/has_many_associations_test.rb:1307]:
+    # 6 instead of 4 queries were executed.
+    # Queries:
+    # UPDATE "topics" SET "parent_id" = ?, "updated_at" = ? WHERE "topics"."id" = ?
+    # SELECT "topics"."id" FROM "topics" WHERE "topics"."id" = ?
+    # insert into topics_replies_counts(parent_id, increment_by) values(6, 1)
+    # UPDATE "topics" SET "parent_id" = ?, "updated_at" = ? WHERE "topics"."id" = ?
+    # SELECT "topics"."id" FROM "topics" WHERE "topics"."id" = ?
+    # insert into topics_replies_counts(parent_id, increment_by) values(6, 1).
+    # Expected: 4
+    #   Actual: 6
+    assert_queries(6) do
       topic.replies << [reply1, reply2]
     end
 
@@ -1320,7 +1333,20 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     categorization1 = Categorization.create!
     categorization2 = Categorization.create!
 
-    assert_queries(4) do
+    # counter cache adds more queries
+    #     Failure:
+    # HasManyAssociationsTest#test_counter_cache_updates_in_memory_after_update_with_inverse_of_enabled [/usr/src/rails/activerecord/test/cases/associations/has_many_associations_test.rb:1323]:
+    # 6 instead of 4 queries were executed.
+    # Queries:
+    # UPDATE "categorizations" SET "category_id" = ? WHERE "categorizations"."id" = ?
+    # SELECT "categories"."id" FROM "categories" WHERE "categories"."id" = ?
+    # insert into categories_categorizations_counts(parent_id, increment_by) values(103, 1)
+    # UPDATE "categorizations" SET "category_id" = ? WHERE "categorizations"."id" = ?
+    # SELECT "categories"."id" FROM "categories" WHERE "categories"."id" = ?
+    # insert into categories_categorizations_counts(parent_id, increment_by) values(103, 1).
+    # Expected: 4
+    #   Actual: 6
+    assert_queries(6) do
       category.categorizations << [categorization1, categorization2]
     end
 

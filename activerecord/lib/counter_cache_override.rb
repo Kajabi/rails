@@ -99,46 +99,54 @@ module CounterCacheOverride
         end
         return true
       end
-
-      def update_counters(id, counters)
-
-        super(id, counters_with_default(counters)) unless counters_with_default(counters_without_touch(counters)).empty?
-
-        counters_using_override(counters.except(:touch)).map do |counter_name, value|
-          counter_table_name = "#{table_name}_#{counter_name}s"
-          operator = value < 0 ? '-' : '+'
-          Array.wrap(id).each do |idx|
-            sql = "insert into #{counter_table_name}(parent_id, increment_by) values(:idx, :increment_by)"
-            # ISSUE: This next line is a bit of a hack because of how in memory decrements work
-            value = value == 0 ? -1 : value
-            connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
-          end
-        end
-      end
-
-      private
-      def counters_without_touch(counters)
-        hsh = counters.clone
-        hsh.delete(:touch)
-        hsh
-      end
-
-      def counter_overrides
-        # TODO memoize
-        reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
-      end
-
-      def counters_using_override(counters)
-        counters.select { |key,_|  counter_overrides.include?(key) }
-      end
-
-      def counters_with_default(counters)
-        counters.reject { |key,_|  counter_overrides.include?(key) }
-      end
     end
   end
 end
 ActiveRecord::Base.include CounterCacheOverride::CounterCache
+
+# Rails 6 moved this from CounterCache to relation
+# https://github.com/Kajabi/rails/commit/975fa15b47e4ef47a3b46f0e946860a076167149
+module CounterCacheOverride
+  module Relation
+    def update_counters(counters)
+      super(counters_with_default(counters)) unless counters_with_default(counters_without_touch(counters)).empty?
+
+      counters_using_override(counters.except(:touch)).map do |counter_name, value|
+        counter_table_name = "#{table_name}_#{counter_name}s"
+        operator = value < 0 ? '-' : '+'
+        ids.each do |idx|
+          sql = "insert into #{counter_table_name}(parent_id, increment_by) values(:idx, :increment_by)"
+          # ISSUE: This next line is a bit of a hack because of how in memory decrements work
+          value = value == 0 ? -1 : value
+          connection.exec_query(sanitize_sql_array([sql, idx: idx, increment_by: value]))
+        end
+      end
+    end
+
+    private
+    def counters_without_touch(counters)
+      hsh = counters.clone
+      hsh.delete(:touch)
+      hsh
+    end
+
+    def counter_overrides
+      # TODO memoize
+      reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s)
+    end
+
+    def counters_using_override(counters)
+      counters.select { |key,_|  counter_overrides.include?(key) }
+    end
+
+    def counters_with_default(counters)
+      counters.reject { |key,_|  counter_overrides.include?(key) }
+    end
+
+  end
+end
+ActiveRecord::Relation.prepend CounterCacheOverride::Relation
+
 
 module CounterCacheOverride
   module HasManyCounts
@@ -189,7 +197,9 @@ end
 
 ActiveRecord::Associations::Builder::HasMany.singleton_class.prepend CounterCacheOverride::ValidOptions
 
-module CounterCacheOverride
+# ISSUE - some specs fail when its prepended... haven't been able to figure out the appropriate chain
+# location so that we can have it in our own module
+module ActiveRecord
   module Persistence
     def increment!(attribute, by = 1, touch: nil)
       if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
@@ -204,4 +214,4 @@ module CounterCacheOverride
     end
   end
 end
-ActiveRecord::Persistence.prepend CounterCacheOverride::Persistence
+# ActiveRecord::Persistence.prepend CounterCacheOverride::Persistence

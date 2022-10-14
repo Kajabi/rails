@@ -622,7 +622,9 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   def test_belongs_to_counter_after_save
     topic = Topic.create!(title: "monday night")
 
-    assert_queries(2) do
+    # counter cache override changes the number of queries by 1 for the insert into the
+    # count table
+    assert_queries(3) do
       topic.replies.create!(title: "re: monday night", content: "football")
     end
     assert_equal 0, Topic.find(topic.id)[:replies_count]
@@ -659,7 +661,19 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     debate.touch(time: time)
     debate2.touch(time: time)
 
-    assert_queries(3) do
+    # counter cache override changes the number of queries by 2 for the reassigning
+    #     Failure:
+    # BelongsToAssociationsTest#test_belongs_to_touch_with_reassigning [/usr/src/rails/activerecord/test/#cases/associations/belongs_to_associations_test.rb:664]:
+    # 5 instead of 3 queries were executed.
+    # Queries:
+    # UPDATE "topics" SET "parent_title" = ?, "updated_at" = ? WHERE "topics"."id" = ?
+    # SELECT "topics"."id" FROM "topics" WHERE "topics"."title" = ?
+    # insert into topics_replies_counts(parent_id, increment_by) values(6, 1)
+    # SELECT "topics"."id" FROM "topics" WHERE "topics"."title" = ?
+    # insert into topics_replies_counts(parent_id, increment_by) values(7, -1).
+    # Expected: 3
+    # Actual: 5
+    assert_queries(5) do
       reply.parent_title = "debate"
       reply.save!
     end
