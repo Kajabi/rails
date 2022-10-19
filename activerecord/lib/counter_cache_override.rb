@@ -158,7 +158,7 @@ module CounterCacheOverride
       # If there's nothing in the database and @target has no new records
       # we are certain the current target is an empty array. This is a
       # documented side-effect of the method that may avoid an extra SELECT.
-      @target ||= [] and loaded! if count == 0
+      loaded! if count == 0
 
       [association_scope.limit_value, count].compact.min
     end
@@ -203,7 +203,7 @@ module ActiveRecord
   module Persistence
     def increment!(attribute, by = 1, touch: nil)
       if _reflections.values.map{ |ref| ref.options[:counter_cache_override] }.compact.map(&:to_s).include?(attribute.to_s)
-        self.class.update_counters(id, attribute => by, :touch => touch)
+        self.class.update_counters(id, attribute => by, touch: touch)
       else
         increment(attribute, by)
         change = public_send(attribute) - (attribute_in_database(attribute.to_s) || 0)
