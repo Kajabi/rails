@@ -17,3 +17,5 @@ pkg/
 /tmp/
 /yarn-error.log
 /test-reports/
+# SpecStory explanation file
+.specstory/.what-is-this.md
