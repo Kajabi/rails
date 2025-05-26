@@ -61,6 +61,11 @@ ActiveRecord::Schema.define do
     t.timestamp :manufactured_at, default: -> { "CURRENT_TIMESTAMP" }
   end
 
+  create_table :aircraft_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :articles, force: true do |t|
   end
 
@@ -194,6 +199,16 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :cars_engines_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :cars_wheels_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :old_cars, id: :integer, force: true do |t|
   end
 
@@ -226,6 +241,11 @@ ActiveRecord::Schema.define do
     t.column :post_id, :integer
     t.column :author_id, :integer
     t.column :special, :boolean
+  end
+
+  create_table :categories_categorizations_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :citations, force: true do |t|
@@ -430,6 +450,16 @@ ActiveRecord::Schema.define do
     t.integer :trained_dogs_count, default: 0
     t.integer :bred_dogs_count, default: 0
     t.integer :dogs_count, default: 0
+  end
+
+  create_table :dog_lovers_bred_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :dog_lovers_trained_dogs_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :dogs, force: true do |t|
@@ -833,6 +863,11 @@ ActiveRecord::Schema.define do
     t.timestamps null: false
   end
 
+  create_table :people_friends_too_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :peoples_treasures, id: false, force: true do |t|
     t.column :rich_person_id, :integer
     t.column :treasure_id, :integer
@@ -1066,6 +1101,11 @@ ActiveRecord::Schema.define do
     t.integer :book_id
   end
 
+  create_table :subscribers_books_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
   create_table :tags, force: true do |t|
     t.column :name, :string
     t.column :taggings_count, :integer, default: 0
@@ -1115,6 +1155,16 @@ ActiveRecord::Schema.define do
     t.string   :group
     t.timestamps null: true
     t.index [:author_name, :title]
+  end
+
+  create_table :topics_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
+  end
+
+  create_table :topics_unique_replies_counts, force: true do |t|
+    t.integer :parent_id
+    t.integer :increment_by
   end
 
   create_table :toys, primary_key: :toy_id, force: true do |t|

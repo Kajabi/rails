@@ -33,6 +33,7 @@ class CounterCacheTest < ActiveRecord::TestCase
 
   setup do
     @topic = Topic.find(1)
+    @car = Car.find(1)
   end
 
   test "increment counter" do
@@ -362,6 +363,10 @@ class CounterCacheTest < ActiveRecord::TestCase
     assert_touching @topic, :updated_at, :written_on do
       Topic.decrement_counter(:replies_count, @topic.id, touch: %i( updated_at written_on ))
     end
+  end
+
+  test "counter cache override basic functionality" do
+    assert_equal 0, @car.engines_count
   end
 
   private

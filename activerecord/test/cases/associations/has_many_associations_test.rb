@@ -1369,7 +1369,11 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     categorization1 = Categorization.create!
     categorization2 = Categorization.create!
 
-    assert_queries(4) do
+    # With counter cache override, we expect 6 queries instead of 4:
+    # - 2 UPDATE queries for the categorizations
+    # - 2 SELECT queries to check category existence
+    # - 2 INSERT queries into the counter cache override table
+    assert_queries(6) do
       category.categorizations << [categorization1, categorization2]
     end
 
